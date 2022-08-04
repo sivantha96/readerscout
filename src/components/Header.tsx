@@ -1,8 +1,17 @@
 import React from "react";
-import { AppBar, Fab, Toolbar, Typography, Box } from "@mui/material";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Box,
+  Badge,
+  IconButton,
+} from "@mui/material";
 import PropTypes from "prop-types";
-import MenuBookIcon from "@mui/icons-material/MenuBook";
+import NotificationsIcon from "@mui/icons-material/Notifications";
 import { Colors } from "../assets/colors";
+import LogoImage from "src/assets/images/logo.svg";
+import Image from "./Image";
 
 const Header = ({ alerts = 0 }) => {
   return (
@@ -23,23 +32,35 @@ const Header = ({ alerts = 0 }) => {
             transform: "scale(1.1)",
           }}
         >
-          <MenuBookIcon sx={{ mr: 1 }} />
-          <Typography variant="h6" fontWeight="bold">
-            Bookshopper
-          </Typography>
+          <Image
+            source={LogoImage}
+            alt="logo"
+            height="30px"
+            width="30px"
+            sx={{
+              mr: 2,
+            }}
+          />
+          <Box>
+            <Typography variant="h6" fontWeight="bold">
+              Bookshopper
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                marginTop: "-5px",
+              }}
+            >
+              Watchlist
+            </Typography>
+          </Box>
         </Box>
 
-        <Fab
-          size="small"
-          aria-label="edit"
-          sx={{
-            background: Colors.white,
-          }}
-        >
-          <Typography variant="body1" fontWeight="bold">
-            {alerts}
-          </Typography>
-        </Fab>
+        <IconButton>
+          <Badge badgeContent={alerts} color="error">
+            <NotificationsIcon sx={{ color: Colors.white }} />
+          </Badge>
+        </IconButton>
       </Toolbar>
     </AppBar>
   );

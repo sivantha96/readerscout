@@ -1,6 +1,6 @@
 {
-  "name": "MODO",
-  "description": "Pomodoro timer",
+  "name": "Bookshopper",
+  "description": "Bookshopper Chrome Extension",
   "version": "1.0",
   "manifest_version": 3,
   "background": {
@@ -12,15 +12,15 @@
       "js": ["./static/js/content.js"]
     }
   ],
-  "permissions": ["storage", "activeTab"],
+  "permissions": ["storage", "activeTab", "notifications", "scripting", "tabs"],
   "action": {
     "default_popup": "index.html",
     "default_title": "Open the popup",
     "default_icon": {
-      "16": "logo192.png",
-      "32": "logo192.png",
-      "48": "logo192.png",
-      "128": "logo192.png"
+      "16": "logo16.png",
+      "32": "logo16.png",
+      "48": "logo16.png",
+      "128": "logo16.png"
     }
   },
   "icons": {

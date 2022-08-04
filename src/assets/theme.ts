@@ -31,14 +31,6 @@ const theme = createTheme({
       dark: Colors.greenDark,
       contrastText: Colors.white,
     },
-    white: {
-      main: Colors.white,
-      contrastText: Colors.black,
-    },
-    black: {
-      main: Colors.black,
-      contrastText: Colors.white,
-    },
   },
 });
 export default theme;

@@ -13,100 +13,18 @@ import { Colors } from "../assets/colors";
 import moment from "moment";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-const books = [
-  {
-    id: "asdadaidyasd",
-    name: "Harry potter and the Half Blood Prince. Volume 03. Harry potter and the Half Blood Prince. Volume 03, Harry potter and the Half Blood Prince. Volume 03, Harry potter and the Half Blood Prince. Volume 03",
-    added_on: "2022-07-28T07:39:47.876Z",
-    connected: true,
-  },
-  {
-    id: "aosdhaohdohajd",
-    name: "Game of Thrones",
-    added_on: "2022-07-28T07:39:47.876Z",
-    connected: false,
-  },
-  {
-    id: "aodjbaobdoabsod",
-    name: "Lord of the Rings",
-    added_on: "2022-07-28T07:39:47.876Z",
-    connected: true,
-  },
-  {
-    id: "aosdhohphiqphpqd",
-    name: "Game of Thrones",
-    added_on: "2022-07-28T07:39:47.876Z",
-    connected: false,
-  },
-  {
-    id: "aksbcoahodhahdip",
-    name: "Lord of the Rings",
-    added_on: "2022-07-28T07:39:47.876Z",
-    connected: true,
-  },
-  {
-    id: "apihoqahfoqpfnqofbo",
-    name: "Game of Thrones",
-    added_on: "2022-07-28T07:39:47.876Z",
-    connected: false,
-  },
-  {
-    id: "akscbqac9uqh9c",
-    name: "Lord of the Rings",
-    added_on: "2022-07-28T07:39:47.876Z",
-    connected: true,
-  },
-  {
-    id: "qcoqhocq0hf9p-hfpwc",
-    name: "Game of Thrones",
-    added_on: "2022-07-28T07:39:47.876Z",
-    connected: false,
-  },
-  {
-    id: "q9ucgq9bcoqocqcb",
-    name: "Lord of the Rings",
-    added_on: "2022-07-28T07:39:47.876Z",
-    connected: true,
-  },
-  {
-    id: "q0898hcoquboucbnoq",
-    name: "Game of Thrones",
-    added_on: "2022-07-28T07:39:47.876Z",
-    connected: false,
-  },
-  {
-    id: "qoichoqhwconbioqwc",
-    name: "Lord of the Rings",
-    added_on: "2022-07-28T07:39:47.876Z",
-    connected: true,
-  },
-  {
-    id: "qchqowcoiqnpwcnqw",
-    name: "Game of Thrones",
-    added_on: "2022-07-28T07:39:47.876Z",
-    connected: false,
-  },
-  {
-    id: "qcoqho0cnqc97g9ufb",
-    name: "Lord of the Rings",
-    added_on: "2022-07-28T07:39:47.876Z",
-    connected: true,
-  },
-  {
-    id: "0q8fh80hq0b0qn",
-    name: "Game of Thrones",
-    added_on: "2022-07-28T07:39:47.876Z",
-    connected: false,
-  },
-  {
-    id: "08qhf0hn2pifnip2hf",
-    name: "Lord of the Rings",
-    added_on: "2022-07-28T07:39:47.876Z",
-    connected: true,
-  },
-];
+export interface IBook {
+  id: string;
+  name: string;
+  added_on: string;
+}
 
-const BookList = () => {
+interface BookListProps {
+  books: IBook[];
+  onDelete: Function;
+}
+
+const BookList = ({ books, onDelete }: BookListProps) => {
   return (
     <List
       sx={{
@@ -121,23 +39,26 @@ const BookList = () => {
         <ListItem
           key={book.id.toString()}
           secondaryAction={
-            <IconButton aria-label="delete">
+            <IconButton
+              aria-label="delete"
+              sx={{ mx: 1 }}
+              onClick={() => onDelete(book.id.toString())}
+            >
               <DeleteIcon />
             </IconButton>
           }
+          sx={{
+            padding: 0,
+          }}
         >
           <ListItemButton>
             <ListItemAvatar>
               <Avatar
                 sx={{
-                  backgroundColor: book.connected
-                    ? Colors.greenLight
-                    : Colors.errorLight,
+                  backgroundColor: Colors.greenLight,
                 }}
               >
-                <BookmarkAddedIcon
-                  color={book.connected ? "success" : "error"}
-                />
+                <BookmarkAddedIcon color="success" />
               </Avatar>
             </ListItemAvatar>
             <ListItemText
@@ -149,6 +70,7 @@ const BookList = () => {
                   overflow: "hidden",
                   WebkitBoxOrient: "vertical",
                   WebkitLineClamp: 1,
+                  pr: 1,
                 },
               }}
             />

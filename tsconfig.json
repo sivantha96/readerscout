@@ -14,7 +14,12 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "baseUrl": "./"
   },
-  "include": ["src"]
+  "include": ["src"],
+  "files": ["./src/assets/images/placeholder.webp"],
+  "paths": {
+    "src/*": ["src/*"]
+  }
 }
