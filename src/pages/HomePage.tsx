@@ -1,0 +1,208 @@
+import React, { useEffect, useState } from "react";
+import { Backdrop, Box, Button, CircularProgress } from "@mui/material";
+import axios from "axios";
+import PropTypes from "prop-types";
+import AddIcon from "@mui/icons-material/Add";
+import BookList, { IBook, IWatchlist } from "src/components/BookList";
+import { AMAZON_REGEX, ASIN_REGEX, URLS } from "src/constants";
+import {
+  ContentMessagePayload,
+  CONTENT_MESSAGE_TYPES,
+} from "src/types/chrome.types";
+import { isJson } from "src/utils";
+import Header from "src/components/Header";
+
+interface HomePageProps {
+  onLogout: Function;
+  token: string;
+}
+
+export interface CommonResponse<T> {
+  error: boolean;
+  message: string;
+  data: T;
+}
+
+const HomePage = ({ onLogout, token }: HomePageProps) => {
+  const [alertsCount, setCount] = useState<number>(0);
+  const [list, setList] = useState<IWatchlist[]>([]);
+  const [isAmazonPage, setAmazonPage] = useState<boolean>(false);
+  const [currentBook, setCurrentBook] = useState<string>("");
+  const [currentAsin, setAsin] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+
+  const handleOnClick = async () => {
+    setLoading(true);
+
+    try {
+      const res = await axios.post<CommonResponse<IWatchlist>>(
+        URLS.INFO_API,
+        {
+          asin: currentAsin.toString(),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setList((prevList) => [...prevList, res.data.data]);
+      setLoading(false);
+    } catch (error: any) {
+      if (error?.response.status === 401) {
+        onLogout(() => setLoading(false));
+      }
+      setLoading(false);
+    }
+  };
+
+  const setAlertsCount = (value: number) => {
+    chrome.action.setBadgeText({ text: value.toString() });
+    setCount(value);
+  };
+
+  const updateWatchlist = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get<CommonResponse<IWatchlist[]>>(URLS.INFO_API, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const allItems = res.data?.data;
+      setList(allItems);
+      const totalCount = allItems.reduce((n, item) => {
+        return n + (item.notifications || 0);
+      }, 0);
+      setAlertsCount(totalCount);
+      setLoading(false);
+    } catch (error: any) {
+      console.log(error);
+      if (error.status === "UNAUTHORIZED") {
+        onLogout(() => setLoading(false));
+      }
+    }
+  };
+
+  const handleOnDelete = async (item: IWatchlist, index: number) => {
+    setLoading(true);
+
+    try {
+      await axios.delete<CommonResponse<IBook>>(URLS.INFO_API, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {
+          id: item._id,
+        },
+      });
+
+      const newList = [...list];
+      newList.splice(index, 1);
+      setList(newList);
+
+      setLoading(false);
+    } catch (error: any) {
+      if (error?.response.status === 401) {
+        onLogout(() => setLoading(false));
+      }
+      setLoading(false);
+    }
+  };
+
+  const checkUrl = (): void => {
+    chrome?.tabs?.query(
+      {
+        active: true,
+        currentWindow: true,
+      },
+      (tabs) => {
+        const url = tabs[0].url || "";
+
+        const match = url?.toString().match(AMAZON_REGEX);
+        const asinMatch = url?.match(ASIN_REGEX);
+
+        if (match && match.length > 0 && asinMatch && asinMatch.length > 0) {
+          setAsin(asinMatch[1]);
+          setAmazonPage(true);
+
+          chrome?.tabs?.sendMessage(
+            tabs[0].id || 0,
+            CONTENT_MESSAGE_TYPES.GET_PRODUCT_TITLE,
+            (response: ContentMessagePayload) => {
+              if (!chrome?.runtime?.lastError) {
+                setCurrentBook(response?.data);
+                // if you have any response
+              } else {
+                // if your document doesn’t have any response, it’s fine but you should actually handle
+                // it and we are doing this by carefully examining chrome.runtime.lastError
+                console.log(chrome?.runtime?.lastError);
+              }
+            }
+          );
+        } else {
+          setAmazonPage(false);
+        }
+      }
+    );
+  };
+
+  const getAlerts = () => {
+    chrome?.storage?.local?.get(
+      ["numOfAlerts"],
+      (result: { [key: string]: any }) => {
+        if (result?.numOfAlerts && isJson(result.numOfAlerts)) {
+          setAlertsCount(result.numOfAlerts);
+        }
+      }
+    );
+  };
+
+  useEffect(() => {
+    getAlerts();
+    updateWatchlist();
+    checkUrl();
+    chrome?.tabs?.onUpdated?.addListener(checkUrl);
+    return () => {
+      chrome?.tabs?.onUpdated?.removeListener(checkUrl);
+    };
+  }, []);
+
+  const alreadyAdded = list.some((item) => item.product?.asin === currentAsin);
+
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        height: "600px",
+      }}
+    >
+      <Header alerts={alertsCount} />
+      <BookList data={list} onDelete={handleOnDelete} />
+      <Button
+        onClick={handleOnClick}
+        disabled={!isAmazonPage || !currentBook || alreadyAdded}
+        size="large"
+        startIcon={alreadyAdded ? undefined : <AddIcon />}
+        sx={{
+          py: 3,
+          borderRadius: 0,
+        }}
+      >
+        {alreadyAdded ? "Already Added to the List" : "Add to the Watch List"}
+      </Button>
+
+      <Backdrop open={loading} sx={{ zIndex: 999 }}>
+        <CircularProgress />
+      </Backdrop>
+    </Box>
+  );
+};
+
+HomePage.propTypes = {
+  onLogout: PropTypes.func,
+  onRefreshToken: PropTypes.func,
+};
+
+export default HomePage;

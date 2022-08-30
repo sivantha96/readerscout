@@ -10,7 +10,6 @@ const messagesFromReactAppListener = (
   sendResponse: (response: ContentMessagePayload) => void
 ) => {
   const element = document.getElementById("productTitle");
-  console.log(type, sender);
 
   const response: ContentMessagePayload = {
     type: CONTENT_MESSAGE_TYPES.GET_PRODUCT_TITLE,

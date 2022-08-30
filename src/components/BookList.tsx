@@ -14,17 +14,30 @@ import moment from "moment";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 export interface IBook {
-  id: string;
-  name: string;
-  added_on: string;
+  _id: string;
+  asin: string;
+  title: string;
+  rating: string;
+  ratings_total: number;
+  last_modified_on: Date;
+  added_on: Date;
+}
+
+export interface IWatchlist {
+  _id: string;
+  product: IBook;
+  notifications: number;
+  user: string;
+  added_on: Date;
+  last_notified_on: Date;
 }
 
 interface BookListProps {
-  books: IBook[];
-  onDelete: Function;
+  data: IWatchlist[];
+  onDelete: (item: IWatchlist, index: number) => void;
 }
 
-const BookList = ({ books, onDelete }: BookListProps) => {
+const BookList = ({ data, onDelete }: BookListProps) => {
   return (
     <List
       sx={{
@@ -35,14 +48,14 @@ const BookList = ({ books, onDelete }: BookListProps) => {
         overflowY: "scroll",
       }}
     >
-      {books.map((book) => (
+      {data.map((item, index) => (
         <ListItem
-          key={book.id.toString()}
+          key={item._id}
           secondaryAction={
             <IconButton
               aria-label="delete"
               sx={{ mx: 1 }}
-              onClick={() => onDelete(book.id.toString())}
+              onClick={() => onDelete(item, index)}
             >
               <DeleteIcon />
             </IconButton>
@@ -62,8 +75,8 @@ const BookList = ({ books, onDelete }: BookListProps) => {
               </Avatar>
             </ListItemAvatar>
             <ListItemText
-              primary={book.name}
-              secondary={moment(book.added_on).format("MMM DD, YYYY")}
+              primary={item.product.title}
+              secondary={moment(item.added_on).format("MMM DD, YYYY")}
               primaryTypographyProps={{
                 sx: {
                   display: "-webkit-box",

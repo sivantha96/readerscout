@@ -1,12 +1,15 @@
-function checkForValidUrls(value: string) {
-  console.log(value);
+import axios from "axios";
+import { IWatchlist } from "src/components/BookList";
+import { URLS } from "src/constants";
+import { CommonResponse } from "src/pages/HomePage";
+
+function checkForValidUrls() {
   chrome.tabs.query(
     {
       active: true,
       currentWindow: true,
     },
     (tabs) => {
-      console.log(value, "tabs", tabs);
       const amazonRegex =
         /https?:\/\/(?=(?:....)?amazon|smile)(www|smile)\S+com(((?:\/(?:dp|gp)\/([A-Z0-9]+))?\S*[?&]?(?:tag=))?\S*?)(?:#)?(\w*?-\w{2})?(\S*)(#?\S*)+/;
       const asinRegex = /(?:dp|gp)\/(.{10})(\/)/;
@@ -51,62 +54,47 @@ chrome.runtime.onInstalled.addListener(async () => {
     isClickable: false,
   });
 
-  const numOfAlerts = 10;
-  setNotificationBadge(numOfAlerts);
-
-  const mockBooks = [
-    {
-      id: "asdadaidyasd",
-      name: "Harry potter and the Half Blood Prince. Volume 03. Harry potter and the Half Blood Prince. Volume 03, Harry potter and the Half Blood Prince. Volume 03, Harry potter and the Half Blood Prince. Volume 03",
-      added_on: "2022-07-28T07:39:47.876Z",
-    },
-    {
-      id: "aosdhaohdohajd",
-      name: "Game of Thrones",
-      added_on: "2022-07-28T07:39:47.876Z",
-    },
-  ];
+  const numOfAlerts = 0;
 
   chrome.storage.local.set({ numOfAlerts });
-  chrome.storage.local.set({ watchList: JSON.stringify(mockBooks) });
 });
 
 chrome.tabs.onUpdated.addListener(() => {
-  checkForValidUrls("onUpdated");
+  checkForValidUrls();
 });
 
 chrome.tabs.onActivated.addListener(() => {
-  checkForValidUrls("onActivated");
+  checkForValidUrls();
 });
 
 // everytime a new chrome window is opened
 chrome.windows.onCreated.addListener(async () => {
-  // TODO: make an API call to the backend and get the watchlist and the number of alerts
-  const numOfAlerts = 14;
-  setNotificationBadge(numOfAlerts);
+  chrome?.storage?.local?.get(
+    ["token"],
+    async (result: { [key: string]: any }) => {
+      if (result?.token) {
+        try {
+          const res = await axios.get<CommonResponse<IWatchlist[]>>(
+            URLS.INFO_API,
+            {
+              headers: { Authorization: `Bearer ${result?.token}` },
+            }
+          );
 
-  const mockBooks = [
-    {
-      id: "asdadaidyasd",
-      name: "Harry potter and the Half Blood Prince. Volume 03. Harry potter and the Half Blood Prince. Volume 03, Harry potter and the Half Blood Prince. Volume 03, Harry potter and the Half Blood Prince. Volume 03",
-      added_on: "2022-07-28T07:39:47.876Z",
-    },
-    {
-      id: "aosdhaohdohajd",
-      name: "Game of Thrones",
-      added_on: "2022-07-28T07:39:47.876Z",
-    },
-    {
-      id: "aodjbaobdoabsod",
-      name: "Lord of the Rings",
-      added_on: "2022-07-28T07:39:47.876Z",
-    },
-  ];
+          const allItems = res.data?.data;
+          const totalCount = allItems.reduce((n, item) => {
+            return n + (item.notifications || 0);
+          }, 0);
 
-  chrome.storage.local.set({ numOfAlerts });
-  chrome.storage.local.set({ watchList: JSON.stringify(mockBooks) });
-
-  // whenever some update happen on a tab including the startup
+          setNotificationBadge(totalCount);
+          chrome.storage.local.set({ numOfAlerts: totalCount });
+        } catch (error: any) {
+          console.log(error);
+          chrome.storage.local.set({ error: "oops" });
+        }
+      }
+    }
+  );
 });
 
 export {};
