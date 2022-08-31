@@ -6,6 +6,21 @@
             "name": "bookshopper-info:index.handler (nodejs14.x)",
             "invokeTarget": {
                 "target": "code",
+                "projectRoot": "${workspaceFolder}/aws/bookshopper-info",
+                "lambdaHandler": "index.handler"
+            },
+            "lambda": {
+                "runtime": "nodejs14.x",
+                "payload": {},
+                "environmentVariables": {}
+            }
+        },
+        {
+            "type": "aws-sam",
+            "request": "direct-invoke",
+            "name": "bookshopper-info:index.handler (nodejs14.x)",
+            "invokeTarget": {
+                "target": "code",
                 "projectRoot": "${workspaceFolder}/bookshopper-info",
                 "lambdaHandler": "index.handler"
             },

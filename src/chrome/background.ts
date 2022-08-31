@@ -1,4 +1,3 @@
-import axios from "axios";
 import { IWatchlist } from "src/components/BookList";
 import { URLS } from "src/constants";
 import { CommonResponse } from "src/pages/HomePage";
@@ -42,6 +41,40 @@ function setNotificationBadge(value: number) {
   chrome.action.setBadgeBackgroundColor({ color: "#c20000" });
 }
 
+function fetchWatchlist() {
+  chrome?.storage?.local?.get(
+    ["token"],
+    async (result: { [key: string]: any }) => {
+      if (result?.token) {
+        try {
+          const response = await fetch(URLS.INFO_API, {
+            method: "GET",
+            headers: { Authorization: `Bearer ${result?.token}` },
+          });
+
+          const res: CommonResponse<IWatchlist[]> = await response.json();
+
+          const allItems = res.data;
+          const totalCount = allItems.reduce((n, item) => {
+            return n + (item.notifications || 0);
+          }, 0);
+
+          setNotificationBadge(totalCount);
+          chrome.storage.local.set({ numOfAlerts: totalCount });
+        } catch (error: any) {
+          console.log("fetch error", error);
+        }
+      }
+    }
+  );
+}
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm && alarm.name === "REFRESH_WATCHLIST") {
+    fetchWatchlist();
+  }
+});
+
 // when the chrome extension is installed the first time
 chrome.runtime.onInstalled.addListener(async () => {
   createNotification({
@@ -55,46 +88,31 @@ chrome.runtime.onInstalled.addListener(async () => {
   });
 
   const numOfAlerts = 0;
-
   chrome.storage.local.set({ numOfAlerts });
+  fetchWatchlist();
+  chrome.alarms.create("REFRESH_WATCHLIST", { periodInMinutes: 60 });
 });
 
+// when the tab is updated
 chrome.tabs.onUpdated.addListener(() => {
   checkForValidUrls();
 });
 
+// when a new tab if focused
 chrome.tabs.onActivated.addListener(() => {
   checkForValidUrls();
 });
 
+// everytime the chrome is restarted
+chrome.runtime.onStartup.addListener(() => {
+  fetchWatchlist();
+  chrome.alarms.create("REFRESH_WATCHLIST", { periodInMinutes: 60 });
+});
+
 // everytime a new chrome window is opened
-chrome.windows.onCreated.addListener(async () => {
-  chrome?.storage?.local?.get(
-    ["token"],
-    async (result: { [key: string]: any }) => {
-      if (result?.token) {
-        try {
-          const res = await axios.get<CommonResponse<IWatchlist[]>>(
-            URLS.INFO_API,
-            {
-              headers: { Authorization: `Bearer ${result?.token}` },
-            }
-          );
-
-          const allItems = res.data?.data;
-          const totalCount = allItems.reduce((n, item) => {
-            return n + (item.notifications || 0);
-          }, 0);
-
-          setNotificationBadge(totalCount);
-          chrome.storage.local.set({ numOfAlerts: totalCount });
-        } catch (error: any) {
-          console.log(error);
-          chrome.storage.local.set({ error: "oops" });
-        }
-      }
-    }
-  );
+chrome.runtime.onStartup.addListener(async () => {
+  fetchWatchlist();
+  chrome.alarms.create("REFRESH_WATCHLIST", { periodInMinutes: 60 });
 });
 
 export {};
