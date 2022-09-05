@@ -35,7 +35,7 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
     setLoading(true);
 
     try {
-      const res = await axios.post<CommonResponse<IWatchlist>>(
+      const res = await axios.patch<CommonResponse<IWatchlist>>(
         URLS.INFO_API,
         {
           asin: currentAsin.toString(),
