@@ -1,45 +1,45 @@
 {
-  "name": "Bookshopper",
-  "description": "Bookshopper Chrome Extension",
-  "version": "1.0",
-  "manifest_version": 3,
-  "background": {
-    "service_worker": "background.js"
-  },
-  "content_scripts": [
-    {
-      "matches": ["http://*/*", "https://*/*"],
-      "js": ["./static/js/content.js"]
+    "name": "Bookshopper",
+    "description": "Bookshopper Chrome Extension",
+    "version": "1.0",
+    "manifest_version": 3,
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [
+        {
+            "matches": ["http://*/*", "https://*/*"],
+            "js": ["./static/js/content.js"]
+        }
+    ],
+    "permissions": [
+        "storage",
+        "activeTab",
+        "notifications",
+        "scripting",
+        "alarms",
+        "tabs",
+        "identity",
+        "identity.email"
+    ],
+    "action": {
+        "default_popup": "index.html",
+        "default_title": "Open the popup",
+        "default_icon": {
+            "16": "logo16.png",
+            "32": "logo16.png",
+            "48": "logo16.png",
+            "128": "logo16.png"
+        }
+    },
+    "icons": {
+        "16": "logo192.png",
+        "48": "logo192.png",
+        "128": "logo192.png"
+    },
+    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnKv1yRpFyMNk1+1XSEO8/AVITbOFZhbhUdRuHYl0sbLduDtWpv6/Hsd3F84/jGSQAryboNgrCFHPBu0NYD4hh8ghg0uyKeD9AiDrvlQbrqeDvOJAtVqnVkqCq6nJwyu1RS2h42dvxK8OCITPNfbaYt3p3J2prd1N3eGexkJv3gnOpYUEpkEfusJsZkwUQS2LT5Z8JmxhY1BtIbMJDhXtN1r0YejluzvszJ+aerQL/pnXbgQ8R9zQJBK+XKIYPSf83aYZaN3nF84ZuJB30TtlcPm5yoF6DOJP/Jusl7nMN6XWgAmzOjsyVlbyoY6SPev7vo2uxEY1hHnl62KTEiPUmwIDAQAB",
+    "oauth2": {
+        "client_id": "776330643444-q06b5p07c82gd07brmvbcc7mfre9l161.apps.googleusercontent.com",
+        "scopes": ["https://www.googleapis.com/auth/userinfo.email"]
     }
-  ],
-  "permissions": [
-    "storage",
-    "activeTab",
-    "notifications",
-    "scripting",
-    "alarms",
-    "tabs",
-    "identity",
-    "identity.email"
-  ],
-  "action": {
-    "default_popup": "index.html",
-    "default_title": "Open the popup",
-    "default_icon": {
-      "16": "logo16.png",
-      "32": "logo16.png",
-      "48": "logo16.png",
-      "128": "logo16.png"
-    }
-  },
-  "icons": {
-    "16": "logo192.png",
-    "48": "logo192.png",
-    "128": "logo192.png"
-  },
-  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnKv1yRpFyMNk1+1XSEO8/AVITbOFZhbhUdRuHYl0sbLduDtWpv6/Hsd3F84/jGSQAryboNgrCFHPBu0NYD4hh8ghg0uyKeD9AiDrvlQbrqeDvOJAtVqnVkqCq6nJwyu1RS2h42dvxK8OCITPNfbaYt3p3J2prd1N3eGexkJv3gnOpYUEpkEfusJsZkwUQS2LT5Z8JmxhY1BtIbMJDhXtN1r0YejluzvszJ+aerQL/pnXbgQ8R9zQJBK+XKIYPSf83aYZaN3nF84ZuJB30TtlcPm5yoF6DOJP/Jusl7nMN6XWgAmzOjsyVlbyoY6SPev7vo2uxEY1hHnl62KTEiPUmwIDAQAB",
-  "oauth2": {
-    "client_id": "776330643444-q06b5p07c82gd07brmvbcc7mfre9l161.apps.googleusercontent.com",
-    "scopes": ["https://www.googleapis.com/auth/userinfo.email"]
-  }
 }
