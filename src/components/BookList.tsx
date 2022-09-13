@@ -1,6 +1,7 @@
 import React from "react";
 import {
     Avatar,
+    CircularProgress,
     IconButton,
     List,
     ListItem,
@@ -30,6 +31,7 @@ export interface IWatchlist {
     user: string;
     added_on: Date;
     last_notified_on: Date;
+    loading?: boolean;
 }
 
 interface BookListProps {
@@ -52,16 +54,27 @@ const BookList = ({ data, onDelete }: BookListProps) => {
                 <ListItem
                     key={item._id}
                     secondaryAction={
-                        <IconButton
-                            aria-label="delete"
-                            sx={{ mx: 1 }}
-                            onClick={() => onDelete(item, index)}
-                        >
-                            <DeleteIcon />
-                        </IconButton>
+                        item.loading ? (
+                            <CircularProgress />
+                        ) : (
+                            <IconButton
+                                color="error"
+                                aria-label="delete"
+                                sx={{ mx: 1 }}
+                                onClick={() => onDelete(item, index)}
+                            >
+                                <DeleteIcon />
+                            </IconButton>
+                        )
                     }
                     sx={{
                         padding: 0,
+                        "& .MuiListItemSecondaryAction-root": {
+                            display: "none",
+                        },
+                        "&:hover .MuiListItemSecondaryAction-root": {
+                            display: "block",
+                        },
                     }}
                 >
                     <ListItemButton>
@@ -85,7 +98,6 @@ const BookList = ({ data, onDelete }: BookListProps) => {
                                     overflow: "hidden",
                                     WebkitBoxOrient: "vertical",
                                     WebkitLineClamp: 1,
-                                    pr: 1,
                                 },
                             }}
                         />

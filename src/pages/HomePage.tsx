@@ -58,14 +58,50 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
     };
 
     const setAlertsCount = (value: number) => {
-        chrome.action.setBadgeText({ text: value.toString() });
+        chrome.action.setBadgeText({ text: value > 0 ? "New" : "" });
         setCount(value);
     };
 
-    const updateWatchlist = async () => {
+    const getLatestWatchlist = async () => {
         setLoading(true);
         try {
             const res = await axios.get<CommonResponse<IWatchlist[]>>(
+                URLS.INFO_API,
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+
+            let allItems = res.data?.data;
+
+            // get the notification count
+            const totalCount = allItems.reduce((n, item) => {
+                return n + (item.notifications || 0);
+            }, 0);
+            setAlertsCount(totalCount);
+
+            if (totalCount > 0) {
+                // if there are new updates
+                // set everything to loading state
+                allItems = allItems.map((item) => ({ ...item, loading: true }));
+                // trigger update all the books in the user's watchlist
+                updateUserWatchlist();
+            }
+
+            setList(allItems);
+            setLoading(false);
+        } catch (error: any) {
+            console.log(error);
+            if (error.status === "UNAUTHORIZED") {
+                onLogout(() => setLoading(false));
+            }
+        }
+    };
+
+    const updateUserWatchlist = async () => {
+        setLoading(true);
+        try {
+            const res = await axios.patch<CommonResponse<IWatchlist[]>>(
                 URLS.INFO_API,
                 {
                     headers: { Authorization: `Bearer ${token}` },
@@ -96,6 +132,7 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
                     Authorization: `Bearer ${token}`,
                 },
                 params: {
+                    type: "book",
                     id: item._id,
                 },
             });
@@ -166,9 +203,42 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
         );
     };
 
+    const goToWeb = () => {
+        const newWindow = window.open(
+            "https://publisherrocket.com/",
+            "_blank",
+            "noopener,noreferrer"
+        );
+        if (newWindow) newWindow.opener = null;
+    };
+
+    const handleOnClickNotifications = async () => {
+        setLoading(true);
+
+        try {
+            await axios.delete<CommonResponse<IBook>>(URLS.INFO_API, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                params: {
+                    type: "notification",
+                },
+            });
+
+            setAlertsCount(0);
+            setLoading(false);
+            goToWeb();
+        } catch (error: any) {
+            if (error?.response.status === 401) {
+                onLogout(() => setLoading(false));
+            }
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         getAlerts();
-        updateWatchlist();
+        getLatestWatchlist();
         checkUrl();
         chrome?.tabs?.onUpdated?.addListener(checkUrl);
         return () => {
@@ -188,7 +258,10 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
                 height: "600px",
             }}
         >
-            <Header alerts={alertsCount} />
+            <Header
+                alerts={alertsCount}
+                onClickNotifications={handleOnClickNotifications}
+            />
             <BookList data={list} onDelete={handleOnDelete} />
             <Button
                 onClick={handleOnClick}

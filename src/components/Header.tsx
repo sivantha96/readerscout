@@ -13,15 +13,8 @@ import { Colors } from "../assets/colors";
 import LogoImage from "src/assets/images/logo.svg";
 import Image from "./Image";
 
-const Header = ({ alerts = 0 }) => {
-    const goToWeb = () => {
-        const newWindow = window.open(
-            "https://publisherrocket.com/",
-            "_blank",
-            "noopener,noreferrer"
-        );
-        if (newWindow) newWindow.opener = null;
-    };
+const Header = ({ alerts = 0, onClickNotifications = () => {} }) => {
+   
 
     return (
         <AppBar position="static" color="primary" enableColorOnDark>
@@ -65,10 +58,14 @@ const Header = ({ alerts = 0 }) => {
                     </Box>
                 </Box>
 
-                <IconButton onClick={goToWeb}>
-                    <Badge badgeContent={alerts} color="error">
+                <IconButton onClick={onClickNotifications}>
+                    {alerts > 0 ? (
+                        <Badge badgeContent="New" color="error">
+                            <NotificationsIcon sx={{ color: Colors.white }} />
+                        </Badge>
+                    ) : (
                         <NotificationsIcon sx={{ color: Colors.white }} />
-                    </Badge>
+                    )}
                 </IconButton>
             </Toolbar>
         </AppBar>
@@ -77,6 +74,7 @@ const Header = ({ alerts = 0 }) => {
 
 Header.propTypes = {
     alerts: PropTypes.number,
+    onClickNotifications: PropTypes.func,
 };
 
 export default Header;

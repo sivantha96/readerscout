@@ -42,12 +42,12 @@ function createNotification(
 }
 
 function setNotificationBadge(value: number) {
-    chrome.action.setBadgeText({ text: value.toString() });
+    chrome.action.setBadgeText({ text: value > 0 ? "New" : "" });
     chrome.action.setBadgeBackgroundColor({ color: "#c20000" });
 }
 
 function fetchWatchlist() {
-    chrome?.storage?.local?.get(
+    chrome.storage.local.get(
         ["token"],
         async (result: { [key: string]: any }) => {
             if (result?.token) {
