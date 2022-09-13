@@ -61,7 +61,7 @@ function fetchWatchlist() {
                         await response.json();
 
                     const allItems = res.data;
-                    const totalCount = allItems.reduce((n, item) => {
+                    const totalCount = allItems?.reduce((n, item) => {
                         return n + (item.notifications || 0);
                     }, 0);
 
