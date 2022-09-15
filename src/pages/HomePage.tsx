@@ -78,6 +78,7 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
             const totalCount = allItems.reduce((n, item) => {
                 return n + (item.notifications || 0);
             }, 0);
+
             setAlertsCount(totalCount);
 
             if (totalCount > 0) {
@@ -85,42 +86,61 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
                 // set everything to loading state
                 allItems = allItems.map((item) => ({ ...item, loading: true }));
                 // trigger update all the books in the user's watchlist
-                updateUserWatchlist();
+                updateUserWatchlist(allItems);
             }
 
             setList(allItems);
             setLoading(false);
         } catch (error: any) {
-            console.log(error);
             if (error.status === "UNAUTHORIZED") {
                 onLogout(() => setLoading(false));
             }
         }
     };
 
-    const updateUserWatchlist = async () => {
-        setLoading(true);
-        try {
-            const res = await axios.patch<CommonResponse<IWatchlist[]>>(
-                URLS.INFO_API,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
+    const stopLoading = (id: string) => {
+        setList((prevList) =>
+            prevList.map((item) => {
+                if (item._id === id) {
+                    return {
+                        ...item,
+                        loading: false,
+                    };
                 }
-            );
 
-            const allItems = res.data?.data;
-            setList(allItems);
-            const totalCount = allItems.reduce((n, item) => {
-                return n + (item.notifications || 0);
-            }, 0);
-            setAlertsCount(totalCount);
-            setLoading(false);
-        } catch (error: any) {
-            console.log(error);
-            if (error.status === "UNAUTHORIZED") {
-                onLogout(() => setLoading(false));
+                return item;
+            })
+        );
+    };
+
+    const updateUserWatchlist = async (allItems: IWatchlist[]) => {
+        const promises = allItems.map(async (listItem) => {
+            try {
+                await axios.patch<CommonResponse<IWatchlist[]>>(
+                    URLS.INFO_API,
+                    {
+                        asin: listItem.product.asin,
+                    },
+                    {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }
+                );
+
+                stopLoading(listItem._id);
+            } catch (error: any) {
+                stopLoading(listItem._id);
+
+                if (error.status === "UNAUTHORIZED") {
+                    onLogout(() => setLoading(false));
+                }
+
+                return null;
             }
-        }
+        });
+
+        console.log(promises);
+
+        await Promise.all(promises);
     };
 
     const handleOnDelete = async (item: IWatchlist, index: number) => {

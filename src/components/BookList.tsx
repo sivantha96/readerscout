@@ -55,7 +55,7 @@ const BookList = ({ data, onDelete }: BookListProps) => {
                     key={item._id}
                     secondaryAction={
                         item.loading ? (
-                            <CircularProgress />
+                            <CircularProgress size={30} />
                         ) : (
                             <IconButton
                                 color="error"
@@ -70,7 +70,7 @@ const BookList = ({ data, onDelete }: BookListProps) => {
                     sx={{
                         padding: 0,
                         "& .MuiListItemSecondaryAction-root": {
-                            display: "none",
+                            display: item.loading ? "block" : "none",
                         },
                         "&:hover .MuiListItemSecondaryAction-root": {
                             display: "block",

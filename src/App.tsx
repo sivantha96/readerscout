@@ -21,7 +21,6 @@ function App() {
                 interactive: true,
             },
             (response: string) => {
-                console.log(response);
                 setLoading(false);
                 setToken(response);
                 chrome.storage.local.set({ token: response });
