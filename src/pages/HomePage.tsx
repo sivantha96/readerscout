@@ -133,8 +133,6 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
                 if (error.status === "UNAUTHORIZED") {
                     onLogout(() => setLoading(false));
                 }
-
-                return null;
             }
         });
 
