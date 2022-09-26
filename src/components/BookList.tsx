@@ -19,6 +19,8 @@ export interface IBook {
     asin: string;
     title: string;
     rating: string;
+    price: any;
+    bestsellers_rank: any;
     ratings_total: number;
     last_modified_on: Date;
     added_on: Date;
@@ -30,7 +32,6 @@ export interface IWatchlist {
     notifications: number;
     user: string;
     added_on: Date;
-    last_notified_on: Date;
     loading?: boolean;
 }
 
