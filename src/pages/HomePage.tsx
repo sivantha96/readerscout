@@ -23,6 +23,11 @@ export interface CommonResponse<T> {
     data: T;
 }
 
+interface WatchListResponse {
+    watchList: IWatchlist[];
+    userId: string;
+}
+
 const HomePage = ({ onLogout, token }: HomePageProps) => {
     const [alertsCount, setCount] = useState<number>(0);
     const [list, setList] = useState<IWatchlist[]>([]);
@@ -30,6 +35,7 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
     const [currentBook, setCurrentBook] = useState<string>("");
     const [currentAsin, setAsin] = useState<string>("");
     const [loading, setLoading] = useState(false);
+    const [userId, setUserId] = useState<string>("");
 
     const handleOnClick = async () => {
         setLoading(true);
@@ -65,14 +71,15 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
     const getLatestWatchlist = async () => {
         setLoading(true);
         try {
-            const res = await axios.get<CommonResponse<IWatchlist[]>>(
+            const res = await axios.get<CommonResponse<WatchListResponse>>(
                 URLS.INFO_API,
                 {
                     headers: { Authorization: `Bearer ${token}` },
                 }
             );
 
-            let allItems = res.data?.data;
+            setUserId(res.data?.data.userId);
+            let allItems = res.data?.data.watchList;
 
             // get the notification count
             const totalCount = allItems.reduce((n, item) => {
@@ -222,6 +229,8 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
     };
 
     const goToWeb = () => {
+        // TODO: attach userId to the end of the url
+        console.log(userId);
         const newWindow = window.open(
             "https://publisherrocket.com/",
             "_blank",
