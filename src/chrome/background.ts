@@ -61,9 +61,18 @@ function fetchWatchlist() {
                         await response.json();
 
                     const allItems = res.data;
-                    const totalCount = allItems?.reduce((n, item) => {
-                        return n + (item.notifications || 0);
+                    const totalCountRatingCount = allItems?.reduce(
+                        (n, item) => {
+                            return n + (item.notifications_rating || 0);
+                        },
+                        0
+                    );
+                    const totalCountPriceCount = allItems?.reduce((n, item) => {
+                        return n + (item.notifications_price || 0);
                     }, 0);
+
+                    const totalCount =
+                        totalCountRatingCount + totalCountPriceCount;
 
                     setNotificationBadge(totalCount);
                     chrome.storage.local.set({ numOfAlerts: totalCount });

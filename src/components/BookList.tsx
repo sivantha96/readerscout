@@ -29,7 +29,8 @@ export interface IBook {
 export interface IWatchlist {
     _id: string;
     product: IBook;
-    notifications: number;
+    notifications_price: number;
+    notifications_rating: number;
     user: string;
     added_on: Date;
     loading?: boolean;

@@ -82,9 +82,15 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
             let allItems = res.data?.data.watchList;
 
             // get the notification count
-            const totalCount = allItems.reduce((n, item) => {
-                return n + (item.notifications || 0);
+            const totalCountRatingCount = allItems.reduce((n, item) => {
+                return n + (item.notifications_rating || 0);
             }, 0);
+
+            const totalCountPriceCount = allItems?.reduce((n, item) => {
+                return n + (item.notifications_price || 0);
+            }, 0);
+
+            const totalCount = totalCountRatingCount + totalCountPriceCount;
 
             setAlertsCount(totalCount);
 
