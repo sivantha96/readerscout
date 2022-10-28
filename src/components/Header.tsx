@@ -2,7 +2,6 @@ import React from "react";
 import {
     AppBar,
     Toolbar,
-    Typography,
     Box,
     Badge,
     IconButton,
@@ -10,12 +9,10 @@ import {
 import PropTypes from "prop-types";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { Colors } from "../assets/colors";
-import LogoImage from "src/assets/images/logo.svg";
+import LogoImage from "src/assets/images/logo-large.png";
 import Image from "./Image";
 
 const Header = ({ alerts = 0, onClickNotifications = () => {} }) => {
-   
-
     return (
         <AppBar position="static" color="primary" enableColorOnDark>
             <Toolbar
@@ -37,25 +34,11 @@ const Header = ({ alerts = 0, onClickNotifications = () => {} }) => {
                     <Image
                         source={LogoImage}
                         alt="logo"
-                        height="30px"
-                        width="30px"
+                        width="230px"
                         sx={{
                             mr: 2,
                         }}
                     />
-                    <Box>
-                        <Typography variant="h6" fontWeight="bold">
-                            Bookshopper
-                        </Typography>
-                        <Typography
-                            variant="body2"
-                            sx={{
-                                marginTop: "-5px",
-                            }}
-                        >
-                            Watchlist
-                        </Typography>
-                    </Box>
                 </Box>
 
                 <IconButton onClick={onClickNotifications}>

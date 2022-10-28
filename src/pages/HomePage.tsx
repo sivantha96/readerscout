@@ -235,10 +235,8 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
     };
 
     const goToWeb = () => {
-        // TODO: attach userId to the end of the url
-        console.log(userId);
         const newWindow = window.open(
-            "https://publisherrocket.com/",
+            `https://readerscout.wpengine.com/user/${userId}`,
             "_blank",
             "noopener,noreferrer"
         );
@@ -302,18 +300,18 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
                     !isAmazonPage ||
                     !currentBook ||
                     alreadyAdded ||
-                    list.length === 20
+                    list.length === 5
                 }
                 size="large"
                 startIcon={
-                    alreadyAdded || list.length === 20 ? undefined : <AddIcon />
+                    alreadyAdded || list.length === 5 ? undefined : <AddIcon />
                 }
                 sx={{
                     py: 3,
                     borderRadius: 0,
                 }}
             >
-                {list.length === 20
+                {list.length === 5
                     ? "List is Full"
                     : alreadyAdded
                     ? "Already Added to the List"

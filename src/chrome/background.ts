@@ -95,9 +95,9 @@ chrome.runtime.onInstalled.addListener(async () => {
     createNotification({
         type: "basic",
         iconUrl: "logo192.png",
-        title: "Welcome to Bookshopper",
+        title: "Welcome to ReaderScout",
         message: "You can add you books from amazon to track the rating!",
-        buttons: [{ title: "Welcome to Bookshopper." }],
+        buttons: [{ title: "Welcome to ReaderScout." }],
         priority: 0,
         isClickable: false,
     });

@@ -9,7 +9,6 @@ import {
     ListItemButton,
     ListItemText,
 } from "@mui/material";
-import BookmarkAddedIcon from "@mui/icons-material/BookmarkAdded";
 import { Colors } from "../assets/colors";
 import moment from "moment";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -24,6 +23,9 @@ export interface IBook {
     ratings_total: number;
     last_modified_on: Date;
     added_on: Date;
+    link: string;
+    authors: any[];
+    cover: string;
 }
 
 export interface IWatchlist {
@@ -54,6 +56,7 @@ const BookList = ({ data, onDelete }: BookListProps) => {
         >
             {data.map((item, index) => (
                 <ListItem
+                    alignItems="flex-start"
                     key={item._id}
                     secondaryAction={
                         item.loading ? (
@@ -70,6 +73,8 @@ const BookList = ({ data, onDelete }: BookListProps) => {
                         )
                     }
                     sx={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
                         padding: 0,
                         "& .MuiListItemSecondaryAction-root": {
                             display: item.loading ? "block" : "none",
@@ -82,12 +87,10 @@ const BookList = ({ data, onDelete }: BookListProps) => {
                     <ListItemButton>
                         <ListItemAvatar>
                             <Avatar
-                                sx={{
-                                    backgroundColor: Colors.greenLight,
-                                }}
-                            >
-                                <BookmarkAddedIcon color="success" />
-                            </Avatar>
+                                variant="rounded"
+                                alt="book cover"
+                                src={item.product.cover}
+                            />
                         </ListItemAvatar>
                         <ListItemText
                             primary={item.product.title}
@@ -99,7 +102,7 @@ const BookList = ({ data, onDelete }: BookListProps) => {
                                     display: "-webkit-box",
                                     overflow: "hidden",
                                     WebkitBoxOrient: "vertical",
-                                    WebkitLineClamp: 1,
+                                    WebkitLineClamp: 2,
                                 },
                             }}
                         />

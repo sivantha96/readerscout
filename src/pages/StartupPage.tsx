@@ -3,7 +3,7 @@ import { Box, ButtonBase, Typography } from "@mui/material";
 import PropTypes from "prop-types";
 import { ReactComponent as GoogleImage } from "src/assets/images/google.svg";
 import Image from "src/components/Image";
-import Logo from "src/assets/images/logo.svg";
+import Logo from "src/assets/images/logo.png";
 
 interface StartupProps {
     onLogin: Function;
@@ -22,7 +22,7 @@ const StartupPage = ({ onLogin }: StartupProps) => {
         >
             <Image source={Logo} alt="logo" width="100px" />
             <Typography variant="h4" sx={{ mt: 2 }}>
-                Bookshopper
+                ReaderScout
             </Typography>
             <Typography variant="body1" sx={{ mb: 4 }}>
                 Track your books easily

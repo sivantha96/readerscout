@@ -1,6 +1,6 @@
 {
-    "name": "Bookshopper",
-    "description": "Bookshopper Chrome Extension",
+    "name": "ReaderScout",
+    "description": "ReaderScout Chrome Extension",
     "version": "1.0",
     "manifest_version": 3,
     "background": {
