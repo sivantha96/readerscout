@@ -65,7 +65,13 @@ const BookList = ({ data, onDelete }: BookListProps) => {
                             <IconButton
                                 color="error"
                                 aria-label="delete"
-                                sx={{ mx: 1 }}
+                                sx={{
+                                    mx: 1,
+                                    background: "#fefefe",
+                                    "&:hover": {
+                                        background: "#fefefe",
+                                    },
+                                }}
                                 onClick={() => onDelete(item, index)}
                             >
                                 <DeleteIcon />
@@ -73,8 +79,8 @@ const BookList = ({ data, onDelete }: BookListProps) => {
                         )
                     }
                     sx={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
+                        display: "flex",
+                        alignItems: "flex-start",
                         padding: 0,
                         "& .MuiListItemSecondaryAction-root": {
                             display: item.loading ? "block" : "none",
@@ -84,7 +90,13 @@ const BookList = ({ data, onDelete }: BookListProps) => {
                         },
                     }}
                 >
-                    <ListItemButton>
+                    <ListItemButton
+                        sx={{
+                            "&.MuiListItemButton-root": {
+                                paddingRight: 0,
+                            },
+                        }}
+                    >
                         <ListItemAvatar>
                             <Avatar
                                 variant="rounded"
@@ -103,6 +115,14 @@ const BookList = ({ data, onDelete }: BookListProps) => {
                                     overflow: "hidden",
                                     WebkitBoxOrient: "vertical",
                                     WebkitLineClamp: 2,
+                                    fontSize: "0.9rem",
+                                    lineHeight: "0.9rem",
+                                    fontWeight: 500,
+                                },
+                            }}
+                            secondaryTypographyProps={{
+                                sx: {
+                                    fontSize: "0.8rem",
                                 },
                             }}
                         />
