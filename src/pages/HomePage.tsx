@@ -56,10 +56,11 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
             setList((prevList) => [...prevList, res.data.data]);
             setLoading(false);
         } catch (error: any) {
-            if (error?.response.status === 401) {
+            if (error?.response?.status === 401) {
                 onLogout(() => setLoading(false));
             }
             setLoading(false);
+            console.log(error);
         }
     };
 
@@ -174,10 +175,11 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
 
             setLoading(false);
         } catch (error: any) {
-            if (error?.response.status === 401) {
+            if (error?.response?.status === 401) {
                 onLogout(() => setLoading(false));
             }
             setLoading(false);
+            console.log(error);
         }
     };
 
@@ -199,7 +201,7 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
                     asinMatch &&
                     asinMatch.length > 0
                 ) {
-                    setAsin(asinMatch[1]);
+                    setAsin(asinMatch[2]);
                     setAmazonPage(true);
 
                     chrome?.tabs?.sendMessage(
@@ -260,10 +262,11 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
             setLoading(false);
             goToWeb();
         } catch (error: any) {
-            if (error?.response.status === 401) {
+            if (error?.response?.status === 401) {
                 onLogout(() => setLoading(false));
             }
             setLoading(false);
+            console.log(error);
         }
     };
 
@@ -304,7 +307,13 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
                 }
                 size="large"
                 startIcon={
-                    alreadyAdded || list.length === 5 ? undefined : <AddIcon />
+                    alreadyAdded ||
+                    list.length === 5 ? undefined : isAmazonPage &&
+                      !currentBook ? (
+                        <CircularProgress size={20} color="info" />
+                    ) : (
+                        <AddIcon />
+                    )
                 }
                 sx={{
                     py: 3,
@@ -315,6 +324,8 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
                     ? "List is Full"
                     : alreadyAdded
                     ? "Already Added to the List"
+                    : isAmazonPage && !currentBook
+                    ? ""
                     : "Add to the Watch List"}
             </Button>
 

@@ -10,8 +10,9 @@ function checkForValidUrls() {
         },
         (tabs) => {
             const amazonRegex =
-                /https?:\/\/(?=(?:....)?amazon|smile)(www|smile)\S+com(((?:\/(?:dp|gp)\/([A-Z0-9]+))?\S*[?&]?(?:tag=))?\S*?)(?:#)?(\w*?-\w{2})?(\S*)(#?\S*)+/;
-            const asinRegex = /(?:dp|gp)\/(.{10})(\/)/;
+                /https?:\/\/(?=(?:....)?amazon|smile)(www|smile)\S+com(((?:\/(?:dp|gp\/product|exec\/obidos\/asin)(\/)?([A-Z0-9]+))?\S*[?&]?(?:tag=))?\S*?)(?:#)?(\w*?-\w{2})?(\S*)(#?\S*)+/;
+            const asinRegex =
+                /(?:dp|gp\/product|exec\/obidos\/asin)\/(\.+\/)?(.{10})/;
 
             const url = tabs[0].url || "";
             const match = url?.toString().match(amazonRegex);
@@ -96,8 +97,9 @@ chrome.runtime.onInstalled.addListener(async () => {
         type: "basic",
         iconUrl: "logo192.png",
         title: "Welcome to ReaderScout",
-        message: "You can add you books from amazon to track the rating!",
-        buttons: [{ title: "Welcome to ReaderScout." }],
+        message:
+            "Start tracking price changes and new reviews for books on Amazon",
+        buttons: [{ title: "Welcome to ReaderScout" }],
         priority: 0,
         isClickable: false,
     });

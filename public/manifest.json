@@ -1,6 +1,6 @@
 {
     "name": "ReaderScout",
-    "description": "ReaderScout Chrome Extension",
+    "description": "Get notifications on price changes and new reviews for Amazon books",
     "version": "1.0",
     "manifest_version": 3,
     "background": {
@@ -24,7 +24,7 @@
     ],
     "action": {
         "default_popup": "index.html",
-        "default_title": "Open the popup",
+        "default_title": "ReaderScout",
         "default_icon": {
             "16": "logo16.png",
             "32": "logo16.png",
