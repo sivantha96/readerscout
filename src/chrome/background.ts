@@ -47,31 +47,34 @@ function setNotificationBadge(value: number) {
 }
 
 function fetchWatchlist() {
-    chrome?.identity?.getAuthToken({}, async (token: string) => {
-        try {
-            const response = await fetch(URLS.INFO_API, {
-                method: "GET",
-                headers: { Authorization: `Bearer ${token}` },
-            });
+    chrome?.identity?.getAuthToken(
+        { interactive: true },
+        async (token: string) => {
+            try {
+                const response = await fetch(URLS.INFO_API, {
+                    method: "GET",
+                    headers: { Authorization: `Bearer ${token}` },
+                });
 
-            const res: CommonResponse<WatchListResponse> =
-                await response.json();
+                const res: CommonResponse<WatchListResponse> =
+                    await response.json();
 
-            const allItems = res.data.watchList;
-            const totalCountRatingCount = allItems?.reduce((n, item) => {
-                return n + (item.notifications_rating || 0);
-            }, 0);
-            const totalCountPriceCount = allItems?.reduce((n, item) => {
-                return n + (item.notifications_price || 0);
-            }, 0);
+                const allItems = res.data.watchList;
+                const totalCountRatingCount = allItems?.reduce((n, item) => {
+                    return n + (item.notifications_rating || 0);
+                }, 0);
+                const totalCountPriceCount = allItems?.reduce((n, item) => {
+                    return n + (item.notifications_price || 0);
+                }, 0);
 
-            const totalCount = totalCountRatingCount + totalCountPriceCount;
+                const totalCount = totalCountRatingCount + totalCountPriceCount;
 
-            setNotificationBadge(totalCount);
-        } catch (error: any) {
-            console.log("fetchWatchlist error", error);
+                setNotificationBadge(totalCount);
+            } catch (error: any) {
+                console.log("fetchWatchlist error", error);
+            }
         }
-    });
+    );
 }
 
 chrome.alarms.onAlarm.addListener((alarm) => {
