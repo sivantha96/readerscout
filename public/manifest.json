@@ -6,17 +6,10 @@
     "background": {
         "service_worker": "background.js"
     },
-    "content_scripts": [
-        {
-            "matches": ["http://*/*", "https://*/*"],
-            "js": ["./static/js/content.js"]
-        }
-    ],
+    "host_permissions": ["https://wcn5h43pgd.execute-api.us-east-1.amazonaws.com/"],
     "permissions": [
-        "storage",
         "activeTab",
         "notifications",
-        "scripting",
         "alarms",
         "tabs",
         "identity",

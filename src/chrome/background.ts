@@ -1,6 +1,5 @@
-import { IWatchlist } from "src/components/BookList";
 import { URLS } from "src/constants";
-import { CommonResponse } from "src/pages/HomePage";
+import { CommonResponse, WatchListResponse } from "src/pages/HomePage";
 
 function checkForValidUrls() {
     chrome.tabs.query(
@@ -14,7 +13,7 @@ function checkForValidUrls() {
             const asinRegex =
                 /(?:dp|gp\/product|exec\/obidos\/asin)\/(\.+\/)?(.{10})/;
 
-            const url = tabs[0].url || "";
+            const url = tabs[0]?.url || "";
             const match = url?.toString().match(amazonRegex);
             const asinMatch = url?.match(asinRegex);
 
@@ -48,41 +47,31 @@ function setNotificationBadge(value: number) {
 }
 
 function fetchWatchlist() {
-    chrome.storage.local.get(
-        ["token"],
-        async (result: { [key: string]: any }) => {
-            if (result?.token) {
-                try {
-                    const response = await fetch(URLS.INFO_API, {
-                        method: "GET",
-                        headers: { Authorization: `Bearer ${result?.token}` },
-                    });
+    chrome?.identity?.getAuthToken({}, async (token: string) => {
+        try {
+            const response = await fetch(URLS.INFO_API, {
+                method: "GET",
+                headers: { Authorization: `Bearer ${token}` },
+            });
 
-                    const res: CommonResponse<IWatchlist[]> =
-                        await response.json();
+            const res: CommonResponse<WatchListResponse> =
+                await response.json();
 
-                    const allItems = res.data;
-                    const totalCountRatingCount = allItems?.reduce(
-                        (n, item) => {
-                            return n + (item.notifications_rating || 0);
-                        },
-                        0
-                    );
-                    const totalCountPriceCount = allItems?.reduce((n, item) => {
-                        return n + (item.notifications_price || 0);
-                    }, 0);
+            const allItems = res.data.watchList;
+            const totalCountRatingCount = allItems?.reduce((n, item) => {
+                return n + (item.notifications_rating || 0);
+            }, 0);
+            const totalCountPriceCount = allItems?.reduce((n, item) => {
+                return n + (item.notifications_price || 0);
+            }, 0);
 
-                    const totalCount =
-                        totalCountRatingCount + totalCountPriceCount;
+            const totalCount = totalCountRatingCount + totalCountPriceCount;
 
-                    setNotificationBadge(totalCount);
-                    chrome.storage.local.set({ numOfAlerts: totalCount });
-                } catch (error: any) {
-                    console.log("fetch error", error);
-                }
-            }
+            setNotificationBadge(totalCount);
+        } catch (error: any) {
+            console.log("fetchWatchlist error", error);
         }
-    );
+    });
 }
 
 chrome.alarms.onAlarm.addListener((alarm) => {
@@ -104,8 +93,6 @@ chrome.runtime.onInstalled.addListener(async () => {
         isClickable: false,
     });
 
-    const numOfAlerts = 0;
-    chrome.storage.local.set({ numOfAlerts });
     fetchWatchlist();
     chrome.alarms.create("REFRESH_WATCHLIST", { periodInMinutes: 60 });
 });

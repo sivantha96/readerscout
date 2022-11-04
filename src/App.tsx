@@ -23,7 +23,6 @@ function App() {
             (response: string) => {
                 setLoading(false);
                 setToken(response);
-                chrome.storage.local.set({ token: response });
             }
         );
     };

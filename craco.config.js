@@ -11,7 +11,6 @@ module.exports = {
                             ),
                         paths.appIndexJs,
                     ].filter(Boolean),
-                    content: "./src/chrome/content.ts",
                     background: "./src/chrome/background.ts",
                 },
                 output: {

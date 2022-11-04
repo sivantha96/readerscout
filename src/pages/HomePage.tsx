@@ -5,11 +5,6 @@ import PropTypes from "prop-types";
 import AddIcon from "@mui/icons-material/Add";
 import BookList, { IBook, IWatchlist } from "src/components/BookList";
 import { AMAZON_REGEX, ASIN_REGEX, URLS } from "src/constants";
-import {
-    ContentMessagePayload,
-    CONTENT_MESSAGE_TYPES,
-} from "src/types/chrome.types";
-import { isJson } from "src/utils";
 import Header from "src/components/Header";
 
 interface HomePageProps {
@@ -23,7 +18,7 @@ export interface CommonResponse<T> {
     data: T;
 }
 
-interface WatchListResponse {
+export interface WatchListResponse {
     watchList: IWatchlist[];
     userId: string;
 }
@@ -32,7 +27,6 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
     const [alertsCount, setCount] = useState<number>(0);
     const [list, setList] = useState<IWatchlist[]>([]);
     const [isAmazonPage, setAmazonPage] = useState<boolean>(false);
-    const [currentBook, setCurrentBook] = useState<string>("");
     const [currentAsin, setAsin] = useState<string>("");
     const [loading, setLoading] = useState(false);
     const [userId, setUserId] = useState<string>("");
@@ -60,7 +54,7 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
                 onLogout(() => setLoading(false));
             }
             setLoading(false);
-            console.log(error);
+            console.log("add book error", error);
         }
     };
 
@@ -150,8 +144,6 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
             }
         });
 
-        console.log(promises);
-
         await Promise.all(promises);
     };
 
@@ -179,7 +171,7 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
                 onLogout(() => setLoading(false));
             }
             setLoading(false);
-            console.log(error);
+            console.log("delete error", error);
         }
     };
 
@@ -190,7 +182,7 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
                 currentWindow: true,
             },
             (tabs) => {
-                const url = tabs[0].url || "";
+                const url = tabs[0]?.url || "";
 
                 const match = url?.toString().match(AMAZON_REGEX);
                 const asinMatch = url?.match(ASIN_REGEX);
@@ -203,21 +195,6 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
                 ) {
                     setAsin(asinMatch[2]);
                     setAmazonPage(true);
-
-                    chrome?.tabs?.sendMessage(
-                        tabs[0].id || 0,
-                        CONTENT_MESSAGE_TYPES.GET_PRODUCT_TITLE,
-                        (response: ContentMessagePayload) => {
-                            if (!chrome?.runtime?.lastError) {
-                                setCurrentBook(response?.data);
-                                // if you have any response
-                            } else {
-                                // if your document doesn’t have any response, it’s fine but you should actually handle
-                                // it and we are doing this by carefully examining chrome.runtime.lastError
-                                console.log(chrome?.runtime?.lastError);
-                            }
-                        }
-                    );
                 } else {
                     setAmazonPage(false);
                 }
@@ -225,20 +202,9 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
         );
     };
 
-    const getAlerts = () => {
-        chrome?.storage?.local?.get(
-            ["numOfAlerts"],
-            (result: { [key: string]: any }) => {
-                if (result?.numOfAlerts && isJson(result.numOfAlerts)) {
-                    setAlertsCount(result.numOfAlerts);
-                }
-            }
-        );
-    };
-
     const goToWeb = () => {
         const newWindow = window.open(
-            `https://readerscout.wpengine.com/user/${userId}`,
+            `${URLS.WEB_URL}/${userId}`,
             "_blank",
             "noopener,noreferrer"
         );
@@ -266,12 +232,11 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
                 onLogout(() => setLoading(false));
             }
             setLoading(false);
-            console.log(error);
+            console.log("on click notifications error", error);
         }
     };
 
     useEffect(() => {
-        getAlerts();
         getLatestWatchlist();
         checkUrl();
         chrome?.tabs?.onUpdated?.addListener(checkUrl);
@@ -301,7 +266,7 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
                 onClick={handleOnClick}
                 disabled={
                     !isAmazonPage ||
-                    !currentBook ||
+                    !currentAsin ||
                     alreadyAdded ||
                     list.length === 5
                 }
@@ -309,7 +274,7 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
                 startIcon={
                     alreadyAdded ||
                     list.length === 5 ? undefined : isAmazonPage &&
-                      !currentBook ? (
+                      !currentAsin ? (
                         <CircularProgress size={20} color="info" />
                     ) : (
                         <AddIcon />
@@ -324,7 +289,7 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
                     ? "List is Full"
                     : alreadyAdded
                     ? "Already Added to the List"
-                    : isAmazonPage && !currentBook
+                    : isAmazonPage && !currentAsin
                     ? ""
                     : "Add to the Watch List"}
             </Button>
