@@ -59,31 +59,27 @@ const BookList = ({ data, onDelete }: BookListProps) => {
                     alignItems="flex-start"
                     key={item._id}
                     secondaryAction={
-                        item.loading ? (
-                            <CircularProgress size={30} />
-                        ) : (
-                            <IconButton
-                                color="error"
-                                aria-label="delete"
-                                sx={{
-                                    mx: 1,
+                        <IconButton
+                            color="error"
+                            aria-label="delete"
+                            sx={{
+                                mx: 1,
+                                background: "#fefefe",
+                                "&:hover": {
                                     background: "#fefefe",
-                                    "&:hover": {
-                                        background: "#fefefe",
-                                    },
-                                }}
-                                onClick={() => onDelete(item, index)}
-                            >
-                                <DeleteIcon />
-                            </IconButton>
-                        )
+                                },
+                            }}
+                            onClick={() => onDelete(item, index)}
+                        >
+                            <DeleteIcon />
+                        </IconButton>
                     }
                     sx={{
                         display: "flex",
                         alignItems: "flex-start",
                         padding: 0,
                         "& .MuiListItemSecondaryAction-root": {
-                            display: item.loading ? "block" : "none",
+                            display: "none",
                         },
                         "&:hover .MuiListItemSecondaryAction-root": {
                             display: "block",
@@ -97,12 +93,22 @@ const BookList = ({ data, onDelete }: BookListProps) => {
                             },
                         }}
                     >
-                        <ListItemAvatar>
-                            <Avatar
-                                variant="rounded"
-                                alt="book cover"
-                                src={item.product.cover}
-                            />
+                        <ListItemAvatar
+                            sx={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                            }}
+                        >
+                            {item.loading ? (
+                                <CircularProgress size={30} />
+                            ) : (
+                                <Avatar
+                                    variant="rounded"
+                                    alt="book cover"
+                                    src={item.product.cover}
+                                />
+                            )}
                         </ListItemAvatar>
                         <ListItemText
                             primary={item.product.title}

@@ -204,7 +204,7 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
 
     const goToWeb = () => {
         const newWindow = window.open(
-            `${URLS.WEB_URL}/${userId}`,
+            `${URLS.WEB_URL}/user/${userId}`,
             "_blank",
             "noopener,noreferrer"
         );
