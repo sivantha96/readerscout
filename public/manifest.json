@@ -1,5 +1,5 @@
 {
-    "name": "ReaderScout DEV",
+    "name": "ReaderScout",
     "description": "Get notifications on price changes and new reviews for Amazon books",
     "version": "1.1",
     "manifest_version": 3,
@@ -7,7 +7,7 @@
         "service_worker": "background.js"
     },
     "host_permissions": [
-        "https://ihwe0lfcm5.execute-api.us-east-1.amazonaws.com/"
+        "https://wcn5h43pgd.execute-api.us-east-1.amazonaws.com/"
     ],
     "permissions": [
         "activeTab",
@@ -19,7 +19,7 @@
     ],
     "action": {
         "default_popup": "index.html",
-        "default_title": "ReaderScout DEV",
+        "default_title": "ReaderScout",
         "default_icon": {
             "16": "logo16.png",
             "32": "logo16.png",
@@ -32,9 +32,9 @@
         "48": "logo192.png",
         "128": "logo192.png"
     },
-    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnKv1yRpFyMNk1+1XSEO8/AVITbOFZhbhUdRuHYl0sbLduDtWpv6/Hsd3F84/jGSQAryboNgrCFHPBu0NYD4hh8ghg0uyKeD9AiDrvlQbrqeDvOJAtVqnVkqCq6nJwyu1RS2h42dvxK8OCITPNfbaYt3p3J2prd1N3eGexkJv3gnOpYUEpkEfusJsZkwUQS2LT5Z8JmxhY1BtIbMJDhXtN1r0YejluzvszJ+aerQL/pnXbgQ8R9zQJBK+XKIYPSf83aYZaN3nF84ZuJB30TtlcPm5yoF6DOJP/Jusl7nMN6XWgAmzOjsyVlbyoY6SPev7vo2uxEY1hHnl62KTEiPUmwIDAQAB",
+    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgcvoJBe1FOMQt8dzx0VMYWLCwDCK1rOjIJy6yg3wwYkjdFQ43QmFnWM+s6oOdd5wZugtWbAfmGK1yELH1j9IQ0tcu4vUZWD3WtXSSQ52LDe9yOuBu/nZKh6IoCmdKGm3EgKEVFZXtoUZ7auRHPojOuZkcDIUZ3TdYLFt05R+9GEO5UQO4TOB0Dikn1fZuvC2dP2LbactH+onB8AbTUTRFsmLKoBbgnKvgRt+KXq8mMEL30mA1N9gF5bXWHmr3jrjFJwctaSnGBD9wXm51VWGsKQfElIyaX7k7gpyzspL0dmGEq1Jf86JhGJ0WmLei8B/3oHzN9hqHK3fIboiobOQmQIDAQAB",
     "oauth2": {
-        "client_id": "131399518939-2d67rjdf6fru1tu42gefs77ejm5s1c78.apps.googleusercontent.com",
+        "client_id": "131399518939-7jmt7ind8a0156padk194qfp4qdqr0ci.apps.googleusercontent.com",
         "scopes": ["https://www.googleapis.com/auth/userinfo.email"]
     }
 }
