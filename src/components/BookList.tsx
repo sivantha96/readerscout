@@ -1,7 +1,6 @@
 import React from "react";
 import {
     Avatar,
-    CircularProgress,
     IconButton,
     List,
     ListItem,
@@ -100,15 +99,11 @@ const BookList = ({ data, onDelete }: BookListProps) => {
                                 alignItems: "center",
                             }}
                         >
-                            {item.loading ? (
-                                <CircularProgress size={30} />
-                            ) : (
-                                <Avatar
-                                    variant="rounded"
-                                    alt="book cover"
-                                    src={item.product.cover}
-                                />
-                            )}
+                            <Avatar
+                                variant="rounded"
+                                alt="book cover"
+                                src={item.product.cover}
+                            />
                         </ListItemAvatar>
                         <ListItemText
                             primary={item.product.title}
