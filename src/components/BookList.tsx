@@ -11,6 +11,7 @@ import {
 import { Colors } from "../assets/colors";
 import moment from "moment";
 import DeleteIcon from "@mui/icons-material/Delete";
+import EmptyList from "./EmptyList";
 
 export interface IBook {
     _id: string;
@@ -39,10 +40,13 @@ export interface IWatchlist {
 
 interface BookListProps {
     data: IWatchlist[];
+    loading: boolean;
     onDelete: (item: IWatchlist, index: number) => void;
 }
 
-const BookList = ({ data, onDelete }: BookListProps) => {
+const BookList = ({ data, onDelete, loading }: BookListProps) => {
+    if ((!data || data.length === 0) && !loading) return <EmptyList />;
+
     return (
         <List
             sx={{

@@ -42,6 +42,19 @@ function createNotification(
 }
 
 function setNotificationBadge(value: number) {
+    chrome.action.getBadgeText({}, (result) => {
+        if (result === "" && value > 0) {
+            createNotification({
+                type: "basic",
+                iconUrl: "logo192.png",
+                title: "New Updates Available",
+                message: "Open up the extension to see new updates",
+                priority: 0,
+                isClickable: false,
+            });
+        }
+    });
+
     chrome.action.setBadgeText({ text: value > 0 ? "New" : "" });
     chrome.action.setBadgeBackgroundColor({ color: "#c20000" });
 }

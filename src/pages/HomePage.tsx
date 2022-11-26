@@ -261,7 +261,7 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
                 alerts={alertsCount}
                 onClickNotifications={handleOnClickNotifications}
             />
-            <BookList data={list} onDelete={handleOnDelete} />
+            <BookList data={list} onDelete={handleOnDelete} loading={loading} />
             <Button
                 onClick={handleOnClick}
                 disabled={

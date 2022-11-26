@@ -1,7 +1,7 @@
 export const Colors = {
     primary: "#0a1439",
     primaryLight: "#cae2ff",
-    primaryDark: "#071628",
+    primaryDark: "#303030",
 
     secondary: "#96c6ff",
     secondaryLight: "#cae2ff",
@@ -21,4 +21,5 @@ export const Colors = {
 
     grayLight: "#eeeeee",
     gray: "#a6a6a6",
+    grayDark: "#757575",
 };

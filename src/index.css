@@ -1,11 +1,15 @@
 html,
 body {
     margin: 0;
-    font-family: "Poppins", sans-serif;
+    font-family: "Raleway", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     height: 600px;
     width: 400px;
+}
+
+* {
+    font-family: "Raleway", sans-serif !important;
 }
 
 code {
