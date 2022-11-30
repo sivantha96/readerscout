@@ -54,7 +54,7 @@ const EmptyList = () => {
             >
                 Click{" "}
                 <Link
-                    href="http://readerscout.com/"
+                    href="https://readerscout.com/getting_started/"
                     rel="noreferrer"
                     target="_blank"
                     sx={{
