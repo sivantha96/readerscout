@@ -1,5 +1,5 @@
 export const URLS = {
     INFO_API:
-        "https://wcn5h43pgd.execute-api.us-east-1.amazonaws.com/default/bookshopper-info",
-    WEB_URL: "https://readerscout.com",
+        "https://ihwe0lfcm5.execute-api.us-east-1.amazonaws.com/default/readerscout-info-dev",
+    WEB_URL: "https://readerscout.wpengine.com",
 };

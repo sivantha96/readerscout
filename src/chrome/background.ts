@@ -43,7 +43,7 @@ function createNotification(
 
 function setNotificationBadge(value: number) {
     chrome.action.getBadgeText({}, (result) => {
-        if (result === "" && value > 0) {
+        if (result !== "New" && value > 0) {
             createNotification({
                 type: "basic",
                 iconUrl: "logo192.png",
