@@ -1,6 +1,5 @@
 import React from "react";
 import {
-    Avatar,
     IconButton,
     List,
     ListItem,
@@ -9,9 +8,9 @@ import {
     ListItemText,
 } from "@mui/material";
 import { Colors } from "../assets/colors";
-import moment from "moment";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EmptyList from "./EmptyList";
+import Image from "./Image";
 
 export interface IBook {
     _id: string;
@@ -89,13 +88,7 @@ const BookList = ({ data, onDelete, loading }: BookListProps) => {
                         },
                     }}
                 >
-                    <ListItemButton
-                        sx={{
-                            "&.MuiListItemButton-root": {
-                                paddingRight: 0,
-                            },
-                        }}
-                    >
+                    <ListItemButton>
                         <ListItemAvatar
                             sx={{
                                 display: "flex",
@@ -103,17 +96,17 @@ const BookList = ({ data, onDelete, loading }: BookListProps) => {
                                 alignItems: "center",
                             }}
                         >
-                            <Avatar
-                                variant="rounded"
+                            <Image
+                                source={item.product.cover}
                                 alt="book cover"
-                                src={item.product.cover}
+                                width="50px"
+                                sx={{
+                                    mr: 2,
+                                }}
                             />
                         </ListItemAvatar>
                         <ListItemText
                             primary={item.product.title}
-                            secondary={moment(item.added_on).format(
-                                "MMM DD, YYYY"
-                            )}
                             primaryTypographyProps={{
                                 sx: {
                                     display: "-webkit-box",
