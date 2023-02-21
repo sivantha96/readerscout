@@ -1,40 +1,48 @@
 {
-    "name": "ReaderScout DEV",
-    "description": "Get notifications on price changes and new reviews for Amazon books",
-    "version": "1.3.1",
-    "manifest_version": 3,
-    "background": {
-        "service_worker": "background.js"
-    },
-    "host_permissions": [
-        "https://ihwe0lfcm5.execute-api.us-east-1.amazonaws.com/"
-    ],
-    "permissions": [
-        "activeTab",
-        "notifications",
-        "alarms",
-        "tabs",
-        "identity",
-        "identity.email"
-    ],
-    "action": {
-        "default_popup": "index.html",
-        "default_title": "ReaderScout DEV",
-        "default_icon": {
-            "16": "logo16.png",
-            "32": "logo16.png",
-            "48": "logo16.png",
-            "128": "logo16.png"
-        }
-    },
-    "icons": {
-        "16": "logo192.png",
-        "48": "logo192.png",
-        "128": "logo192.png"
-    },
-    "key": "ddanlennnnagghbpockfdpleldgfdjke",
-    "oauth2": {
-        "client_id": "131399518939-7jmt7ind8a0156padk194qfp4qdqr0ci.apps.googleusercontent.com",
-        "scopes": ["https://www.googleapis.com/auth/userinfo.email"]
+  "name": "ReaderScout DEV",
+  "description": "Get notifications on price changes and new reviews for Amazon books",
+  "version": "1.3.1",
+  "manifest_version": 3,
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+        "matches": ["http://*/*", "https://*/*"],
+        "js": ["content.js"]
     }
+],
+  "host_permissions": ["*://*.amazonaws.com/", "*://*.amazon.com/"],
+  "permissions": [
+    "webRequest",
+    "activeTab",
+    "notifications",
+    "alarms",
+    "tabs",
+    "windows",
+    "identity",
+    "identity.email",
+    "storage",
+    "scripting"
+  ],
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "ReaderScout DEV",
+    "default_icon": {
+      "16": "logo16.png",
+      "32": "logo16.png",
+      "48": "logo16.png",
+      "128": "logo16.png"
+    }
+  },
+  "icons": {
+    "16": "logo192.png",
+    "48": "logo192.png",
+    "128": "logo192.png"
+  },
+  "key": "ddanlennnnagghbpockfdpleldgfdjke",
+  "oauth2": {
+    "client_id": "131399518939-7jmt7ind8a0156padk194qfp4qdqr0ci.apps.googleusercontent.com",
+    "scopes": ["https://www.googleapis.com/auth/userinfo.email"]
+  }
 }
