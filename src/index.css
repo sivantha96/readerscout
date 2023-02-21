@@ -1,18 +1,18 @@
 html,
 body {
-    margin: 0;
-    font-family: "Raleway", sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    height: 600px;
-    width: 400px;
+  margin: 0;
+  font-family: "Raleway", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  height: 600px;
+  width: 400px;
 }
 
 * {
-    font-family: "Raleway", sans-serif !important;
+  font-family: "Raleway", sans-serif !important;
 }
 
 code {
-    font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-        monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
 }
