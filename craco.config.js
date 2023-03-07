@@ -1,3 +1,5 @@
+const CracoEnvPlugin = require("craco-plugin-env");
+
 module.exports = {
   webpack: {
     configure: (webpackConfig, { env, paths }) => {
@@ -28,4 +30,12 @@ module.exports = {
       };
     },
   },
+  plugins: [
+    {
+      plugin: CracoEnvPlugin,
+      options: {
+        variables: {},
+      },
+    },
+  ],
 };

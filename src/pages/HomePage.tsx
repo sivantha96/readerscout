@@ -10,7 +10,7 @@ import axios from "axios";
 import PropTypes from "prop-types";
 import AddIcon from "@mui/icons-material/Add";
 import BookList, { IBook, IWatchlist } from "src/components/BookList";
-import { AMAZON_REGEX, ASIN_REGEX, URLS } from "src/constants";
+import { AMAZON_REGEX, ASIN_REGEX, AWS_AUTHORS_PAGE } from "src/constants";
 import Header from "src/components/Header";
 import { ContentMessagePayload, MESSAGE_TYPES } from "src/types/chrome.types";
 
@@ -40,10 +40,12 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
   const [followersCount, setFollowersCount] = useState<number>(-1);
   const [authorId, setAuthorId] = useState("");
 
+  console.log(token);
+
   const getFollowersCount = async (authorId: string) => {
     setLoading(true);
     try {
-      const url = `${URLS.AWS_AUTHOR}/${authorId}/latestFollowCount`;
+      const url = `${AWS_AUTHORS_PAGE}/${authorId}/latestFollowCount`;
       const res = await axios.get(url);
 
       setFollowersCount(res.data?.count || -1);
@@ -78,7 +80,7 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
 
     try {
       const res = await axios.put<CommonResponse<IWatchlist>>(
-        URLS.INFO_API,
+        process.env.REACT_APP_INFO_API as string,
         {
           asin: currentAsin.toString(),
         },
@@ -109,7 +111,7 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
     setLoading(true);
     try {
       const res = await axios.get<CommonResponse<WatchListResponse>>(
-        URLS.INFO_API,
+        process.env.REACT_APP_INFO_API as string,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -167,7 +169,7 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
     const promises = allItems.map(async (listItem) => {
       try {
         await axios.patch<CommonResponse<IWatchlist[]>>(
-          URLS.INFO_API,
+          process.env.REACT_APP_INFO_API as string,
           {
             asin: listItem.product.asin,
           },
@@ -193,15 +195,18 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
     setLoading(true);
 
     try {
-      await axios.delete<CommonResponse<IBook>>(URLS.INFO_API, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        params: {
-          type: "book",
-          id: item._id,
-        },
-      });
+      await axios.delete<CommonResponse<IBook>>(
+        process.env.REACT_APP_INFO_API as string,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: {
+            type: "book",
+            id: item._id,
+          },
+        }
+      );
 
       const newList = [...list];
       newList.splice(index, 1);
@@ -241,7 +246,7 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
 
   const goToWeb = () => {
     const newWindow = window.open(
-      `${URLS.WEB_URL}/user/${userId}`,
+      `${process.env.WEB_URL}/user/${userId}`,
       "_blank",
       "noopener,noreferrer"
     );
@@ -278,14 +283,17 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
     setLoading(true);
 
     try {
-      await axios.delete<CommonResponse<IBook>>(URLS.INFO_API, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        params: {
-          type: "notification",
-        },
-      });
+      await axios.delete<CommonResponse<IBook>>(
+        process.env.REACT_APP_INFO_API as string,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: {
+            type: "notification",
+          },
+        }
+      );
 
       setAlertsCount(0);
       setLoading(false);

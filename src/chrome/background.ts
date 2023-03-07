@@ -1,4 +1,3 @@
-import { URLS } from "src/constants";
 import { CommonResponse, WatchListResponse } from "src/pages/HomePage";
 
 function checkForValidUrls() {
@@ -59,7 +58,7 @@ function fetchWatchlist() {
     { interactive: true },
     async (token: string) => {
       try {
-        const response = await fetch(URLS.INFO_API, {
+        const response = await fetch(process.env.REACT_APP_INFO_API as string, {
           method: "GET",
           headers: { Authorization: `Bearer ${token}` },
         });
