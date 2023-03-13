@@ -12,13 +12,11 @@ module.exports = {
             paths.appIndexJs,
           ].filter(Boolean),
           background: "./src/chrome/background.ts",
-          content: "./src/chrome/content.ts",
         },
         output: {
           ...webpackConfig.output,
           filename: (pathData) => {
-            return pathData.chunk.name === "background" ||
-              pathData.chunk.name === "content"
+            return pathData.chunk.name === "background"
               ? "[name].js"
               : "static/js/[name].js";
           },

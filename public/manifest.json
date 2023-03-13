@@ -6,12 +6,15 @@
   "background": {
     "service_worker": "background.js"
   },
-  "content_scripts": [
-    {
-        "matches": ["http://*/*", "https://*/*"],
-        "js": ["content.js"]
-    }
-],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ruleset",
+        "enabled": true,
+        "path": "rules.json"
+      }
+    ]
+  },
   "host_permissions": ["*://*.amazonaws.com/", "*://*.amazon.com/"],
   "permissions": [
     "webRequest",
@@ -23,7 +26,8 @@
     "identity",
     "identity.email",
     "storage",
-    "scripting"
+    "scripting",
+    "declarativeNetRequest"
   ],
   "action": {
     "default_popup": "index.html",

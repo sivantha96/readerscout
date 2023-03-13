@@ -7,7 +7,9 @@
     "start:dev": "env-cmd -f .env.development react-scripts start",
     "build:local": "craco build --mode local",
     "build:dev": "craco build --mode development",
-    "build:prod": "craco build --mode production"
+    "build:prod": "craco build --mode production",
+    "format": "npx prettier --write .",
+    "lint": "npx eslint --ext .ts . --fix"
   },
   "dependencies": {
     "@craco/craco": "^6.4.5",
@@ -25,7 +27,7 @@
     "react-dom": "^18.2.0",
     "react-lottie-player": "^1.5.0",
     "react-scripts": "5.0.1",
-    "typescript": "^4.7.4",
+    "typescript": "*",
     "web-vitals": "^2.1.4"
   },
   "devDependencies": {
@@ -37,17 +39,18 @@
     "@types/react": "^18.0.15",
     "@types/react-dom": "^18.0.6",
     "@types/styled-components": "^5",
-    "@typescript-eslint/eslint-plugin": "latest",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "latest",
     "craco-plugin-env": "^1.0.5",
     "env-cmd": "^10.1.0",
     "eslint": "^8.0.1",
-    "eslint-config-prettier": "^8.5.0",
+    "eslint-config-prettier": "^8.7.0",
     "eslint-config-standard": "latest",
+    "eslint-config-standard-with-typescript": "^34.0.0",
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-n": "^15.0.0",
     "eslint-plugin-promise": "^6.0.0",
-    "eslint-plugin-react": "latest",
+    "eslint-plugin-react": "^7.32.2",
     "prettier": "2.7.1"
   },
   "browserslist": {
