@@ -1,124 +1,145 @@
 import React, { useEffect, useState } from "react";
-import {
-  Backdrop,
-  Box,
-  Button,
-  CircularProgress,
-  Typography,
-} from "@mui/material";
+import { Backdrop, Box, Button, CircularProgress } from "@mui/material";
 import axios from "axios";
-import PropTypes from "prop-types";
 import AddIcon from "@mui/icons-material/Add";
-import BookList, { IBook, IWatchlist } from "src/components/BookList";
-import { AMAZON_REGEX, ASIN_REGEX, AWS_AUTHORS_PAGE } from "src/constants";
+import { AMAZON_REGEX, ASIN_REGEX, NAVIGATION, PROVIDERS } from "src/constants";
 import Header from "src/components/Header";
-import { ContentMessagePayload, MESSAGE_TYPES } from "src/types/chrome.types";
+import { type IAmazonData } from "src/types/amazon.types";
+import { type IWatchItem, type IWatchlist } from "src/types/watchlist.types";
+import { type CommonResponse } from "src/types/common.types";
+import { type IUser } from "src/types/user.types";
+import BookList from "src/components/BookList";
+import LinkAuthorAccount from "src/components/LinkAuthorAccount";
 
 interface HomePageProps {
   onLogout: Function;
   token: string;
+  isSignedInToAmazonAuthor: boolean;
+  amazonData?: IAmazonData;
+  followersCount?: number;
+  profilePicture?: string;
+  userData?: IUser;
+  setUserData: Function;
+  setNavigation: Function;
 }
 
-export interface CommonResponse<T> {
-  error: boolean;
-  message: string;
-  data: T;
-}
-
-export interface WatchListResponse {
-  watchList: IWatchlist[];
-  userId: string;
-}
-
-const HomePage = ({ onLogout, token }: HomePageProps) => {
+const HomePage = ({
+  onLogout,
+  token,
+  isSignedInToAmazonAuthor,
+  amazonData,
+  followersCount,
+  profilePicture,
+  userData,
+  setUserData,
+  setNavigation,
+}: HomePageProps) => {
   const [alertsCount, setCount] = useState<number>(0);
   const [list, setList] = useState<IWatchlist[]>([]);
   const [isAmazonPage, setAmazonPage] = useState<boolean>(false);
   const [currentAsin, setAsin] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  const [userId, setUserId] = useState<string>("");
-  const [followersCount, setFollowersCount] = useState<number>(-1);
-  const [authorId, setAuthorId] = useState("");
 
-  console.log(token);
+  const handleOnDismissAuthorAccountSuggestion = async () => {
+    const url = `${
+      process.env.REACT_APP_API_BASE_URL ?? ""
+    }/users/author-link-suggestion`;
+    setUserData((prevState: IUser) => ({
+      ...prevState,
+      hide_author_suggestion: true,
+    }));
 
-  const getFollowersCount = async (authorId: string) => {
-    setLoading(true);
+    await axios.patch<CommonResponse<IUser>>(
+      url,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          ...(userData?.provider ? { provider: userData.provider } : {}),
+        },
+      }
+    );
+  };
+
+  const updateFollowersCount = async () => {
     try {
-      const url = `${AWS_AUTHORS_PAGE}/${authorId}/latestFollowCount`;
-      const res = await axios.get(url);
+      const url = `${
+        process.env.REACT_APP_API_BASE_URL ?? ""
+      }/users/followers-count`;
+      const res = await axios.patch<CommonResponse<IUser>>(
+        url,
+        {
+          count: followersCount,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            ...(userData?.provider ? { provider: userData.provider } : {}),
+          },
+        }
+      );
 
-      setFollowersCount(res.data?.count || -1);
-      setLoading(false);
+      getLatestWatchlist(res.data.data);
     } catch (error: any) {
-      if (error.status === "UNAUTHORIZED") {
-        onLogout(() => setLoading(false));
+      if (error?.response?.status === 401) {
+        return onLogout(() => setLoading(false));
       }
     }
   };
 
   useEffect(() => {
-    chrome.storage.local.get("authorId").then((res) => {
-      if (res.authorId) {
-        setAuthorId(res.authorId);
-        return getFollowersCount(res.authorId);
-      }
-
-      chrome.storage.onChanged.addListener((changes, namespace) => {
-        for (const [key, { oldValue, newValue }] of Object.entries(changes)) {
-          if (namespace === "local" && key === "authorId" && !oldValue) {
-            setAuthorId(newValue);
-            getFollowersCount(newValue);
-          }
-        }
-      });
-    });
-  }, []);
-
-  const handleOnClick = async () => {
-    setLoading(true);
-
-    try {
-      const res = await axios.put<CommonResponse<IWatchlist>>(
-        process.env.REACT_APP_INFO_API as string,
-        {
-          asin: currentAsin.toString(),
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      setList((prevList) => [...prevList, res.data.data]);
-      setLoading(false);
-    } catch (error: any) {
-      if (error?.response?.status === 401) {
-        onLogout(() => setLoading(false));
-      }
-      setLoading(false);
-      console.log("add book error", error);
+    if (followersCount && userData && userData.provider === PROVIDERS.AMAZON) {
+      updateFollowersCount();
     }
+  }, [followersCount, userData]);
+
+  const updateUserWatchlist = async (allItems: IWatchlist[]) => {
+    const promises = allItems.map(async (listItem) => {
+      try {
+        const url = `${process.env.REACT_APP_API_BASE_URL ?? ""}/watchlist/${
+          listItem._id
+        }`;
+        await axios.patch<CommonResponse<IWatchlist[]>>(
+          url,
+          {
+            asin: listItem.product.asin,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              ...(userData?.provider ? { provider: userData.provider } : {}),
+            },
+          }
+        );
+
+        stopLoading(listItem._id);
+      } catch (error: any) {
+        stopLoading(listItem._id);
+
+        if (error?.response?.status === 401) {
+          return onLogout(() => setLoading(false));
+        }
+        setLoading(false);
+        console.log("updateUserWatchlist error", error);
+      }
+    });
+
+    await Promise.all(promises);
   };
 
-  const setAlertsCount = (value: number) => {
-    chrome.action.setBadgeText({ text: value > 0 ? "New" : "" });
-    setCount(value);
-  };
-
-  const getLatestWatchlist = async () => {
+  const getLatestWatchlist = async (user: IUser) => {
     setLoading(true);
     try {
-      const res = await axios.get<CommonResponse<WatchListResponse>>(
-        process.env.REACT_APP_INFO_API as string,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const url = `${process.env.REACT_APP_API_BASE_URL ?? ""}/watchlist`;
+      const res = await axios.get<CommonResponse<IWatchlist[]>>(url, {
+        headers: {
+          authorization: `Bearer ${token}`,
+          provider: user.provider,
+        },
+      });
 
-      setUserId(res.data?.data.userId);
-      let allItems = res.data?.data.watchList;
+      // setUserData(res.data?.data.user);
+      let allItems = res.data?.data;
 
       // get the notification count
       const totalCountRatingCount = allItems.reduce((n, item) => {
@@ -142,12 +163,56 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
       }
 
       setList(allItems);
+      setTimeout(() => {
+        setLoading(false);
+      }, 1000);
+    } catch (error: any) {
+      if (error?.response?.status === 401) {
+        return onLogout(() => setLoading(false));
+      }
+      setLoading(false);
+      console.log("getLatestWatchlist error", error);
+    }
+  };
+
+  useEffect(() => {
+    if (token && userData) {
+      getLatestWatchlist(userData);
+    }
+  }, [token, userData]);
+
+  const handleOnClick = async () => {
+    // TODO: convert to new API
+    setLoading(true);
+
+    try {
+      const res = await axios.put<CommonResponse<IWatchlist>>(
+        process.env.REACT_APP_API_BASE_URL as string,
+        {
+          asin: currentAsin.toString(),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            ...(userData?.provider ? { provider: userData.provider } : {}),
+          },
+        }
+      );
+
+      setList((prevList) => [...prevList, res.data.data]);
       setLoading(false);
     } catch (error: any) {
-      if (error.status === "UNAUTHORIZED") {
-        onLogout(() => setLoading(false));
+      if (error?.response?.status === 401) {
+        return onLogout(() => setLoading(false));
       }
+      setLoading(false);
+      console.log("handleOnClick error", error);
     }
+  };
+
+  const setAlertsCount = (value: number) => {
+    chrome?.action.setBadgeText({ text: value > 0 ? "New" : "" });
+    setCount(value);
   };
 
   const stopLoading = (id: string) => {
@@ -165,41 +230,16 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
     );
   };
 
-  const updateUserWatchlist = async (allItems: IWatchlist[]) => {
-    const promises = allItems.map(async (listItem) => {
-      try {
-        await axios.patch<CommonResponse<IWatchlist[]>>(
-          process.env.REACT_APP_INFO_API as string,
-          {
-            asin: listItem.product.asin,
-          },
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        stopLoading(listItem._id);
-      } catch (error: any) {
-        stopLoading(listItem._id);
-
-        if (error.status === "UNAUTHORIZED") {
-          onLogout(() => setLoading(false));
-        }
-      }
-    });
-
-    await Promise.all(promises);
-  };
-
   const handleOnDelete = async (item: IWatchlist, index: number) => {
     setLoading(true);
 
     try {
-      await axios.delete<CommonResponse<IBook>>(
-        process.env.REACT_APP_INFO_API as string,
+      await axios.delete<CommonResponse<IWatchItem>>(
+        process.env.REACT_APP_API_BASE_URL as string,
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            ...(userData?.provider ? { provider: userData.provider } : {}),
           },
           params: {
             type: "book",
@@ -215,10 +255,10 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
       setLoading(false);
     } catch (error: any) {
       if (error?.response?.status === 401) {
-        onLogout(() => setLoading(false));
+        return onLogout(() => setLoading(false));
       }
       setLoading(false);
-      console.log("delete error", error);
+      console.log("handleOnDelete error", error);
     }
   };
 
@@ -229,7 +269,7 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
         currentWindow: true,
       },
       (tabs) => {
-        const url = tabs[0]?.url || "";
+        const url = tabs[0]?.url ?? "";
 
         const match = url?.toString().match(AMAZON_REGEX);
         const asinMatch = url?.match(ASIN_REGEX);
@@ -245,49 +285,24 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
   };
 
   const goToWeb = () => {
-    const newWindow = window.open(
-      `${process.env.WEB_URL}/user/${userId}`,
-      "_blank",
-      "noopener,noreferrer"
-    );
-    if (newWindow) newWindow.opener = null;
-  };
-
-  const sendMessage = (message: string) => {
-    chrome.tabs.query({ currentWindow: true, active: true }, (tabs) => {
-      const tab = tabs[0];
-      if (tab.id) {
-        chrome.tabs.sendMessage(
-          tab.id || 0,
-          {
-            type: MESSAGE_TYPES.SHOW_TOAST,
-            data: { message },
-          },
-          (res: ContentMessagePayload) => {
-            if (!chrome?.runtime?.lastError) {
-              console.log(res, "sendMessage");
-
-              // if you have any response
-            } else {
-              // if your document doesn’t have any response, it’s fine but you should actually handle
-              // it and we are doing this by carefully examining chrome.runtime.lastError
-              console.log(chrome?.runtime?.lastError);
-            }
-          }
-        );
-      }
-    });
+    // const newWindow = window.open(
+    //   `${process.env.WEB_URL ?? ""}/user/${userId}`,
+    //   "_blank",
+    //   "noopener,noreferrer"
+    // );
+    // if (newWindow) newWindow.opener = null;
   };
 
   const handleOnClickNotifications = async () => {
     setLoading(true);
 
     try {
-      await axios.delete<CommonResponse<IBook>>(
-        process.env.REACT_APP_INFO_API as string,
+      await axios.delete<CommonResponse<IWatchItem>>(
+        process.env.REACT_APP_API_BASE_URL as string,
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            ...(userData?.provider ? { provider: userData.provider } : {}),
           },
           params: {
             type: "notification",
@@ -300,15 +315,14 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
       goToWeb();
     } catch (error: any) {
       if (error?.response?.status === 401) {
-        onLogout(() => setLoading(false));
+        return onLogout(() => setLoading(false));
       }
       setLoading(false);
-      console.log("on click notifications error", error);
+      console.log("handleOnClickNotifications error", error);
     }
   };
 
   useEffect(() => {
-    getLatestWatchlist();
     checkUrl();
     chrome?.tabs?.onUpdated?.addListener(checkUrl);
     return () => {
@@ -328,52 +342,17 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
     >
       <Header
         alerts={alertsCount}
+        onLogout={onLogout}
         onClickNotifications={handleOnClickNotifications}
       />
-      {!authorId && (
-        <Button
-          onClick={async () => {
-            chrome.tabs.executeScript({
-              code: `document.body.style.backgroundColor = "orange";`,
-            });
-
-            const newURL = "https://author.amazon.com/marketingAndReports";
-            chrome.windows.create(
-              {
-                url: newURL,
-                focused: true,
-                state: "normal",
-                type: "popup",
-                setSelfAsOpener: true,
-              },
-              (window) => {
-                const windowId = window?.id;
-                console.log(windowId, "window?.id");
-
-                chrome.storage.onChanged.addListener((changes, namespace) => {
-                  for (const [key, { oldValue }] of Object.entries(changes)) {
-                    if (
-                      namespace === "local" &&
-                      key === "authorId" &&
-                      !oldValue
-                    ) {
-                      if (windowId) {
-                        chrome.windows.remove(windowId);
-                      }
-                      sendMessage("Logged In Successfully");
-                    }
-                  }
-                });
-              }
-            );
-          }}
-        >
-          Sign up with Amazon
-        </Button>
-      )}
-      {followersCount > -1 && (
-        <Typography>Followers: {followersCount}</Typography>
-      )}
+      {userData?.provider === PROVIDERS.GOOGLE ||
+      !userData?.hide_author_suggestion ? (
+        <LinkAuthorAccount
+          profilePicture={profilePicture}
+          onDismiss={handleOnDismissAuthorAccountSuggestion}
+          onClickLink={() => setNavigation(NAVIGATION.LOGIN)}
+        />
+      ) : null}
       <BookList data={list} onDelete={handleOnDelete} loading={loading} />
       <Button
         onClick={handleOnClick}
@@ -408,11 +387,6 @@ const HomePage = ({ onLogout, token }: HomePageProps) => {
       </Backdrop>
     </Box>
   );
-};
-
-HomePage.propTypes = {
-  onLogout: PropTypes.func,
-  onRefreshToken: PropTypes.func,
 };
 
 export default HomePage;

@@ -15,7 +15,7 @@
       }
     ]
   },
-  "host_permissions": ["*://*.amazonaws.com/", "*://*.amazon.com/"],
+  "host_permissions": ["*://*.amazonaws.com/*", "*://*.amazon.com/*"],
   "permissions": [
     "webRequest",
     "activeTab",

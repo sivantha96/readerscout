@@ -1,6 +1,8 @@
-import { CommonResponse, WatchListResponse } from "src/pages/HomePage";
+import { PROVIDERS } from "src/constants";
+import { type CommonResponse } from "src/types/common.types";
+import { type IWatchlist } from "src/types/watchlist.types";
 
-function checkForValidUrls() {
+function checkForValidUrls(): void {
   chrome.tabs.query(
     {
       active: true,
@@ -12,11 +14,16 @@ function checkForValidUrls() {
       const asinRegex =
         /(?:dp|gp\/product|exec\/obidos\/asin)\/(\.+\/)?(.{10})/;
 
-      const url = tabs[0]?.url || "";
+      const url = tabs[0]?.url ?? "";
       const match = url?.toString().match(amazonRegex);
       const asinMatch = url?.match(asinRegex);
 
-      if (match && match.length > 0 && asinMatch && asinMatch.length > 0) {
+      if (
+        match != null &&
+        match.length > 0 &&
+        asinMatch != null &&
+        asinMatch.length > 0
+      ) {
         chrome.action.setIcon({
           path: "logo16.png",
         });
@@ -31,11 +38,11 @@ function checkForValidUrls() {
 
 function createNotification(
   notification: chrome.notifications.NotificationOptions<true>
-) {
+): void {
   chrome.notifications.create(notification);
 }
 
-function setNotificationBadge(value: number) {
+function setNotificationBadge(value: number): void {
   chrome.action.getBadgeText({}, (result) => {
     if (result !== "New" && value > 0) {
       createNotification({
@@ -49,43 +56,68 @@ function setNotificationBadge(value: number) {
     }
   });
 
-  chrome.action.setBadgeText({ text: value > 0 ? "New" : "" });
-  chrome.action.setBadgeBackgroundColor({ color: "#c20000" });
+  void chrome.action.setBadgeText({ text: value > 0 ? "New" : "" });
+  void chrome.action.setBadgeBackgroundColor({ color: "#c20000" });
 }
 
-function fetchWatchlist() {
-  chrome?.identity?.getAuthToken(
-    { interactive: true },
-    async (token: string) => {
-      try {
-        const response = await fetch(process.env.REACT_APP_INFO_API as string, {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-        });
+async function getWatchlist(token: string, provider: string): Promise<void> {
+  const url = `${process.env.REACT_APP_API_BASE_URL ?? ""}/watchlist`;
+  const response = await fetch(url, {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}`, provider },
+  });
 
-        const res: CommonResponse<WatchListResponse> = await response.json();
+  const res: CommonResponse<IWatchlist[]> = await response.json();
 
-        const allItems = res.data.watchList;
-        const totalCountRatingCount = allItems?.reduce((n, item) => {
-          return n + (item.notifications_rating || 0);
-        }, 0);
-        const totalCountPriceCount = allItems?.reduce((n, item) => {
-          return n + (item.notifications_price || 0);
-        }, 0);
+  if (res.error) {
+    chrome.alarms.clearAll();
+    return;
+  }
 
-        const totalCount = totalCountRatingCount + totalCountPriceCount;
+  const allItems = res.data;
+  const totalCountRatingCount = allItems?.reduce((n, item) => {
+    return n + (item.notifications_rating ?? 0);
+  }, 0);
+  const totalCountPriceCount = allItems?.reduce((n, item) => {
+    return n + (item.notifications_price ?? 0);
+  }, 0);
 
-        setNotificationBadge(totalCount);
-      } catch (error: any) {
-        console.log("fetchWatchlist error", error);
-      }
+  const totalCount = totalCountRatingCount + totalCountPriceCount;
+
+  setNotificationBadge(totalCount);
+}
+
+async function refreshWatchlist(): Promise<void> {
+  try {
+    const res = await chrome?.storage?.local.get("provider");
+
+    // if the provider is NONE then the user has logged out from google, hence do not login automatically
+    if (res.provider === PROVIDERS.NONE) {
+      return;
     }
-  );
+
+    // if the provider is amazon, then refresh the list using token
+    if (res.provider === PROVIDERS.AMAZON) {
+      const res = await chrome?.storage?.local.get("token");
+      getWatchlist(res.token, PROVIDERS.AMAZON);
+    }
+
+    // provider can be GOOGLE or undefined
+    // try to login with GOOGLE and refresh the list
+    chrome?.identity?.getAuthToken({}, async (token: string) => {
+      if (token.length > 0) {
+        getWatchlist(token, PROVIDERS.GOOGLE);
+      }
+    });
+  } catch (error: any) {
+    console.log("refreshWatchlist error", error);
+    await chrome.alarms.clearAll();
+  }
 }
 
-chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm && alarm.name === "REFRESH_WATCHLIST") {
-    fetchWatchlist();
+chrome.alarms.onAlarm.addListener(async (alarm) => {
+  if (alarm.name === "REFRESH_WATCHLIST") {
+    await refreshWatchlist();
   }
 });
 
@@ -101,49 +133,13 @@ chrome.runtime.onInstalled.addListener(async () => {
     isClickable: false,
   });
 
-  fetchWatchlist();
+  void refreshWatchlist();
   chrome.alarms.create("REFRESH_WATCHLIST", { periodInMinutes: 60 });
 });
 
 // when the tab is updated
 chrome.tabs.onUpdated.addListener(() => {
   checkForValidUrls();
-});
-
-// when the tab is updated
-chrome.tabs.onCreated.addListener(() => {
-  chrome.webRequest.onBeforeRequest.addListener(
-    function (data) {
-      if (data.method === "POST") {
-        const url = data.url.substring(data.url.length - 23);
-        if (
-          url === "author.metrics.endpoint" &&
-          data.requestBody?.raw?.[0]?.bytes
-        ) {
-          const postedString = decodeURIComponent(
-            String.fromCharCode.apply(
-              null,
-              new Uint8Array(data.requestBody.raw[0].bytes) as any
-            )
-          );
-
-          if (postedString) {
-            const requestBody = JSON.parse(postedString);
-            const authorId = requestBody?.events?.[0]?.data?.amazonAuthorId;
-            if (authorId) {
-              console.log(authorId, "background");
-
-              chrome.storage.local.set({ authorId });
-            }
-          }
-        }
-      }
-    },
-    {
-      urls: ["*://*.amazon.com/*"],
-    },
-    ["requestBody"]
-  );
 });
 
 // when a new tab if focused
@@ -153,13 +149,13 @@ chrome.tabs.onActivated.addListener(() => {
 
 // everytime the chrome is restarted
 chrome.runtime.onStartup.addListener(() => {
-  fetchWatchlist();
+  void refreshWatchlist();
   chrome.alarms.create("REFRESH_WATCHLIST", { periodInMinutes: 60 });
 });
 
 // everytime a new chrome window is opened
 chrome.runtime.onStartup.addListener(async () => {
-  fetchWatchlist();
+  void refreshWatchlist();
   chrome.alarms.create("REFRESH_WATCHLIST", { periodInMinutes: 60 });
 });
 

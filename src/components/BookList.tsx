@@ -11,31 +11,7 @@ import { Colors } from "../assets/colors";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EmptyList from "./EmptyList";
 import Image from "./Image";
-
-export interface IBook {
-  _id: string;
-  asin: string;
-  title: string;
-  rating: string;
-  price: any;
-  bestsellers_rank: any;
-  ratings_total: number;
-  last_modified_on: Date;
-  added_on: Date;
-  link: string;
-  authors: any[];
-  cover: string;
-}
-
-export interface IWatchlist {
-  _id: string;
-  product: IBook;
-  notifications_price: number;
-  notifications_rating: number;
-  user: string;
-  added_on: Date;
-  loading?: boolean;
-}
+import { type IWatchlist } from "src/types/watchlist.types";
 
 interface BookListProps {
   data: IWatchlist[];

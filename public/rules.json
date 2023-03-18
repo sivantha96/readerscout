@@ -1,1 +1,25 @@
-[]
+[
+  {
+    "id": 57,
+    "priority": 1,
+    "action": {
+      "type": "modifyHeaders",
+      "requestHeaders": [
+        {
+          "header": "Referer",
+          "operation": "set",
+          "value": "https://author.amazon.com/"
+        },
+        {
+          "header": "Origin",
+          "operation": "set",
+          "value": "https://author.amazon.com/"
+        }
+      ]
+    },
+    "condition": {
+      "urlFilter": "*://author.amazon.com/api*",
+      "resourceTypes": ["xmlhttprequest"]
+    }
+  }
+]
