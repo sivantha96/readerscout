@@ -7,5 +7,7 @@ export interface IUser {
     count: number;
     updated_on: Date;
   };
-  hide_author_suggestion: boolean
+  hide_author_suggestion: boolean;
+  profile_picture?: string;
+  name: string;
 }

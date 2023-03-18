@@ -1,23 +1,26 @@
+/* eslint-disable no-constant-condition */
 import React, { useEffect, useState } from "react";
 import { Backdrop, Box, Button, CircularProgress } from "@mui/material";
 import axios from "axios";
 import AddIcon from "@mui/icons-material/Add";
 import { AMAZON_REGEX, ASIN_REGEX, NAVIGATION, PROVIDERS } from "src/constants";
 import Header from "src/components/Header";
-import { type IAmazonData } from "src/types/amazon.types";
 import { type IWatchItem, type IWatchlist } from "src/types/watchlist.types";
 import { type CommonResponse } from "src/types/common.types";
 import { type IUser } from "src/types/user.types";
 import BookList from "src/components/BookList";
 import LinkAuthorAccount from "src/components/LinkAuthorAccount";
+import AuthorProfile from "src/components/AuthorProfile";
+import { type IAmazonData } from "src/types/amazon.types";
 
 interface HomePageProps {
   onLogout: Function;
   token: string;
-  isSignedInToAmazonAuthor: boolean;
   amazonData?: IAmazonData;
+
   followersCount?: number;
   profilePicture?: string;
+
   userData?: IUser;
   setUserData: Function;
   setNavigation: Function;
@@ -26,10 +29,11 @@ interface HomePageProps {
 const HomePage = ({
   onLogout,
   token,
-  isSignedInToAmazonAuthor,
+
   amazonData,
   followersCount,
   profilePicture,
+
   userData,
   setUserData,
   setNavigation,
@@ -66,7 +70,7 @@ const HomePage = ({
       const url = `${
         process.env.REACT_APP_API_BASE_URL ?? ""
       }/users/followers-count`;
-      const res = await axios.patch<CommonResponse<IUser>>(
+      await axios.patch<CommonResponse<IUser>>(
         url,
         {
           count: followersCount,
@@ -78,8 +82,59 @@ const HomePage = ({
           },
         }
       );
+    } catch (error: any) {
+      if (error?.response?.status === 401) {
+        return onLogout(() => setLoading(false));
+      }
+    }
+  };
 
-      getLatestWatchlist(res.data.data);
+  const updateAuthorInfo = async () => {
+    try {
+      const url = `${
+        process.env.REACT_APP_API_BASE_URL ?? ""
+      }/users/author-info`;
+      await axios.patch<CommonResponse<IUser>>(
+        url,
+        {
+          id: amazonData?.author?.amazonAuthorId,
+          asin: amazonData?.author?.asin,
+          marketplace: amazonData?.identities?.[0]?.marketplace,
+          customer_id: amazonData?.account?.customerId,
+          name: amazonData?.identities?.[0]?.claimedAuthorName,
+          created_at: amazonData?.identities?.[0]?.createdAt,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            ...(userData?.provider ? { provider: userData.provider } : {}),
+          },
+        }
+      );
+    } catch (error: any) {
+      if (error?.response?.status === 401) {
+        return onLogout(() => setLoading(false));
+      }
+    }
+  };
+
+  const updateProfilePicture = async () => {
+    try {
+      const url = `${
+        process.env.REACT_APP_API_BASE_URL ?? ""
+      }/users/profile-picture`;
+      await axios.patch<CommonResponse<IUser>>(
+        url,
+        {
+          profile_picture: profilePicture,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            ...(userData?.provider ? { provider: userData.provider } : {}),
+          },
+        }
+      );
     } catch (error: any) {
       if (error?.response?.status === 401) {
         return onLogout(() => setLoading(false));
@@ -88,10 +143,22 @@ const HomePage = ({
   };
 
   useEffect(() => {
-    if (followersCount && userData && userData.provider === PROVIDERS.AMAZON) {
+    if (followersCount && userData?.provider === PROVIDERS.AMAZON) {
       updateFollowersCount();
     }
   }, [followersCount, userData]);
+
+  useEffect(() => {
+    if (amazonData && userData?.provider === PROVIDERS.AMAZON) {
+      updateAuthorInfo();
+    }
+  }, [amazonData, userData]);
+
+  useEffect(() => {
+    if (profilePicture && userData?.provider === PROVIDERS.AMAZON) {
+      updateProfilePicture();
+    }
+  }, [profilePicture, userData]);
 
   const updateUserWatchlist = async (allItems: IWatchlist[]) => {
     const promises = allItems.map(async (listItem) => {
@@ -285,6 +352,7 @@ const HomePage = ({
   };
 
   const goToWeb = () => {
+    // TODO:
     // const newWindow = window.open(
     //   `${process.env.WEB_URL ?? ""}/user/${userId}`,
     //   "_blank",
@@ -345,14 +413,24 @@ const HomePage = ({
         onLogout={onLogout}
         onClickNotifications={handleOnClickNotifications}
       />
-      {userData?.provider === PROVIDERS.GOOGLE ||
+
+      {userData?.provider === PROVIDERS.GOOGLE &&
       !userData?.hide_author_suggestion ? (
         <LinkAuthorAccount
-          profilePicture={profilePicture}
           onDismiss={handleOnDismissAuthorAccountSuggestion}
           onClickLink={() => setNavigation(NAVIGATION.LOGIN)}
         />
       ) : null}
+
+      {userData?.provider === PROVIDERS.AMAZON ? (
+        <AuthorProfile
+          userData={userData}
+          amazonData={amazonData}
+          followersCount={followersCount}
+          profilePicture={profilePicture}
+        />
+      ) : null}
+
       <BookList data={list} onDelete={handleOnDelete} loading={loading} />
       <Button
         onClick={handleOnClick}

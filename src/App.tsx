@@ -235,13 +235,12 @@ function App(): JSX.Element {
           <HomePage
             onLogout={handleOnLogout}
             token={token}
-            isSignedInToAmazonAuthor={isSignedIn}
-            amazonData={amazonData}
-            followersCount={followersCount}
-            profilePicture={profilePicture}
             userData={userData}
             setUserData={setUserData}
             setNavigation={setNavigation}
+            followersCount={followersCount}
+            profilePicture={profilePicture}
+            amazonData={amazonData}
           />
         );
 
