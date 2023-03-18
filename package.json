@@ -9,7 +9,7 @@
     "build:dev": "craco build --mode development",
     "build:prod": "craco build --mode production",
     "format": "npx prettier --write .",
-    "lint": "npx eslint --ext .ts . --fix"
+    "lint": "npx eslint --ext .ts --ext .tsx . --fix"
   },
   "dependencies": {
     "@craco/craco": "^6.4.5",

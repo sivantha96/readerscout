@@ -5,7 +5,7 @@ export enum MESSAGE_TYPES {
   SUCCESS_SHOW_TOAST = "SUCCESS_SHOW_TOAST",
 }
 
-export type ContentMessagePayload = {
+export interface ContentMessagePayload {
   type: MESSAGE_TYPES;
   data?: any;
-};
+}

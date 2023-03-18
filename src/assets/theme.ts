@@ -5,7 +5,7 @@ const theme = createTheme({
   palette: {
     mode: "light",
     background: {
-      default: Colors.grayLight,
+      default: Colors.white,
     },
     primary: {
       main: Colors.primary,

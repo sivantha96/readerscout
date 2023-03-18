@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import placeholder from "src/assets/images/placeholder.webp";
-import { Box, Skeleton, SxProps, Theme } from "@mui/material";
+import { Box, Skeleton, type SxProps, type Theme } from "@mui/material";
 
 interface ImageProps {
   width?: string;
@@ -10,6 +10,7 @@ interface ImageProps {
   alt: string;
   style?: React.CSSProperties;
   isLoading?: string;
+  objectFit?: any;
   sx?: SxProps<Theme>;
 }
 
@@ -21,9 +22,11 @@ const Image = ({
   style,
   isLoading,
   sx,
+  objectFit = "cover",
 }: ImageProps) => {
-  if (!source) return null;
   const [hasLoaded, setLoaded] = useState(false);
+
+  if (!source) return null;
 
   const handleOnLoad = () => {
     setLoaded(true);
@@ -52,7 +55,7 @@ const Image = ({
           width="100%"
           height="100%"
           style={{
-            objectFit: "cover",
+            objectFit,
             objectPosition: "center",
             borderRadius: "inherit",
             position: hasLoaded ? "relative" : "absolute",
@@ -67,7 +70,7 @@ const Image = ({
           height={height}
           style={{
             borderRadius: "inherit",
-            objectFit: "cover",
+            objectFit,
             objectPosition: "center",
           }}
         />
@@ -80,6 +83,7 @@ Image.propTypes = {
   width: PropTypes.string.isRequired,
   height: PropTypes.string,
   source: PropTypes.string,
+  objectFit: PropTypes.string,
   alt: PropTypes.string.isRequired,
   style: PropTypes.object,
   sx: PropTypes.object,

@@ -20,6 +20,7 @@ export const Colors = {
   black: "#262626",
 
   grayLight: "#eeeeee",
+  grayExtraLight: "#f7f7f7",
   gray: "#a6a6a6",
   grayDark: "#757575",
 };

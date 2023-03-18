@@ -1,15 +1,22 @@
-import React, { MouseEventHandler } from "react";
+import React, { type MouseEventHandler } from "react";
 import { Box, ButtonBase, Typography } from "@mui/material";
 import PropTypes from "prop-types";
-import { ReactComponent as GoogleImage } from "src/assets/images/google.svg";
 import Image from "src/components/Image";
 import Logo from "src/assets/images/logo.png";
+import LogoText from "src/assets/images/logo-text.svg";
+import AmazonLogo from "src/assets/images/amazon.svg";
 
 interface StartupProps {
-  onLogin: Function;
+  hideButtons: boolean;
+  onLoginWithGoogle: Function;
+  onLoginWithAmazon: Function;
 }
 
-const StartupPage = ({ onLogin }: StartupProps) => {
+const StartupPage = ({
+  onLoginWithGoogle,
+  onLoginWithAmazon,
+  hideButtons,
+}: StartupProps) => {
   return (
     <Box
       sx={{
@@ -20,40 +27,46 @@ const StartupPage = ({ onLogin }: StartupProps) => {
         alignItems: "center",
       }}
     >
-      <Image source={Logo} alt="logo" width="100px" />
-      <Typography variant="h4" sx={{ mt: 2 }}>
-        ReaderScout
-      </Typography>
+      <Image source={Logo} alt="logo" width="100px" objectFit="contain" />
+      <Image source={LogoText} alt="logo" width="220px" objectFit="contain" />
       <Typography variant="body1" sx={{ mb: 4 }}>
         Track your books easily
       </Typography>
-      <ButtonBase
-        onClick={onLogin as MouseEventHandler}
-        sx={{
-          boxShadow: 4,
-          px: 2,
-          py: 1,
-          borderRadius: 1,
-          fontWeight: 700,
-        }}
-      >
-        <Box
+      {!hideButtons && (
+        <ButtonBase
+          onClick={onLoginWithAmazon as MouseEventHandler}
           sx={{
-            height: 20,
-            width: 20,
-            mr: 2,
+            boxShadow: 4,
+            px: 2,
+            py: 1,
+            borderRadius: 1,
+            fontWeight: 700,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "50px",
+            mb: 2,
+            width: "200px",
           }}
         >
-          <GoogleImage />
-        </Box>
-        Sign In
-      </ButtonBase>
+          <Image
+            source={AmazonLogo}
+            alt="logo"
+            width="20px"
+            objectFit="contain"
+            sx={{ mt: 1, mr: 2 }}
+          />
+          Login with Amazon
+        </ButtonBase>
+      )}
     </Box>
   );
 };
 
 StartupPage.propTypes = {
-  onLogin: PropTypes.func,
+  onLoginWithGoogle: PropTypes.func,
+  onLoginWithAmazon: PropTypes.func,
+  hideButtons: PropTypes.bool,
 };
 
 export default StartupPage;
