@@ -1,4 +1,4 @@
-export interface IWatchItem {
+export interface IProduct {
   _id: string;
   asin: string;
   title: string;
@@ -15,7 +15,7 @@ export interface IWatchItem {
 
 export interface IWatchlist {
   _id: string;
-  product: IWatchItem;
+  product: IProduct;
   notifications_price: number;
   notifications_rating: number;
   user: string;

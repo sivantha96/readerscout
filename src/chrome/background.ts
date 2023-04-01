@@ -20,9 +20,9 @@ function checkForValidUrls(): void {
 
       if (
         match != null &&
-        match.length > 0 &&
+        match?.length > 0 &&
         asinMatch != null &&
-        asinMatch.length > 0
+        asinMatch?.length > 0
       ) {
         chrome.action.setIcon({
           path: "logo16.png",
@@ -104,13 +104,12 @@ async function refreshWatchlist(): Promise<void> {
 
     // provider can be GOOGLE or undefined
     // try to login with GOOGLE and refresh the list
-    chrome?.identity?.getAuthToken({}, async (token: string) => {
-      if (token.length > 0) {
+    chrome?.identity?.getAuthToken({}, (token: string) => {
+      if (token?.length > 0) {
         getWatchlist(token, PROVIDERS.GOOGLE);
       }
     });
   } catch (error: any) {
-    console.log("refreshWatchlist error", error);
     await chrome.alarms.clearAll();
   }
 }

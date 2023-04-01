@@ -22,7 +22,7 @@ const EmptyList = () => {
         loop
         animationData={EmptyListAnimation}
         play
-        style={{ width: 200, height: 200 }}
+        style={{ width: 200, height: 120 }}
       />
       <Typography
         sx={{

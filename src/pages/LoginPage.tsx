@@ -14,6 +14,7 @@ import {
 import Image from "src/components/Image";
 import {
   AWS_AUTHORS_API,
+  AWS_AUTHORS_HOME_PAGE,
   AWS_BOOKS_API,
   NAVIGATION,
   PROVIDERS,
@@ -27,8 +28,14 @@ import { type IAmazonData } from "src/types/amazon.types";
 import { type CommonResponse } from "src/types/common.types";
 import Header from "src/components/Header";
 
+type onSuccessFunction = (
+  token: string,
+  provider: string,
+  callbackFn?: (success: boolean) => void
+) => void;
+
 interface LoginPageProps {
-  onSuccess: Function;
+  onSuccess: onSuccessFunction;
   setNavigation: Function;
 
   amazonData?: IAmazonData;
@@ -38,6 +45,7 @@ interface LoginPageProps {
   currentToken?: string;
   newUser?: boolean;
   isLoading: boolean;
+  isAmazonAuthorPage: boolean;
 }
 
 function LoginPage({
@@ -50,6 +58,7 @@ function LoginPage({
   isLoading = true,
   currentToken,
   setNavigation,
+  isAmazonAuthorPage,
 }: LoginPageProps) {
   const [isLoadingBooks, setLoadingBooks] = useState(false);
   const [isLoadingRegister, setLoadingRegister] = useState(false);
@@ -86,13 +95,16 @@ function LoginPage({
         }
       );
 
-      await chrome?.storage?.local.set({
-        token: res.data.data.token,
-        provider: PROVIDERS.AMAZON,
-      });
+      const callback = (success: boolean) => {
+        if (success) {
+          setLoadingRegister(false);
+          setNavigation(NAVIGATION.HOME);
+        } else {
+          setLoadingRegister(false);
+        }
+      };
 
-      onSuccess(res.data.data.token);
-      setNavigation(NAVIGATION.HOME);
+      onSuccess(res.data.data.token, PROVIDERS.AMAZON, callback);
     } catch (error) {
       console.log(error);
     }
@@ -127,13 +139,18 @@ function LoginPage({
           }
         );
 
-        await chrome?.storage?.local.set({
-          token: res.data.data.token,
-          provider: PROVIDERS.AMAZON,
-        });
+        const callback = (success: boolean) => {
+          if (success) {
+            setLoadingRegister(false);
+            setNavigation(NAVIGATION.HOME);
+          } else {
+            setLoadingRegister(false);
+          }
+        };
 
-        onSuccess(res.data.data.token);
+        onSuccess(res.data.data.token, PROVIDERS.AMAZON, callback);
       } catch (error) {
+        setLoadingRegister(false);
         console.log(error);
       }
     }
@@ -144,36 +161,41 @@ function LoginPage({
   }, [amazonData, books, followersCount, profilePicture, isLoadingBooks]);
 
   const getBooks = async () => {
-    if (!amazonData) return;
+    try {
+      if (!amazonData) return;
 
-    setLoadingBooks(true);
+      setLoadingBooks(true);
 
-    const url = addParamsToURL(AWS_BOOKS_API, {
-      author: amazonData.author.asin,
-      marketplace: amazonData.identities[0].marketplace,
-    });
+      const url = addParamsToURL(AWS_BOOKS_API, {
+        author: amazonData.author.asin,
+        marketplace: amazonData.identities[0].marketplace,
+      });
 
-    const res = await fetch(url, {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        accept: "application/json, text/javascript, */*; q=0.01",
-        "content-type": "application/json",
-        "sec-fetch-dest": "empty",
-        "sec-fetch-mode": "cors",
-        "sec-fetch-site": "same-origin",
-        "x-csrf-token": amazonData.csrftoken.token,
-        "x-requested-with": "XMLHttpRequest",
-      },
-      body: null,
-      mode: "cors",
-    });
+      const res = await fetch(url, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          accept: "application/json, text/javascript, */*; q=0.01",
+          "content-type": "application/json",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "x-csrf-token": amazonData.csrftoken.token,
+          "x-requested-with": "XMLHttpRequest",
+        },
+        body: null,
+        mode: "cors",
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    setBooks(data.data);
+      setBooks(data.data);
 
-    setLoadingBooks(false);
+      setLoadingBooks(false);
+    } catch (error) {
+      setLoadingBooks(false);
+      setLoadingRegister(false);
+    }
   };
 
   const handleOnPressSync = () => {
@@ -189,13 +211,11 @@ function LoginPage({
         height: "600px",
       }}
     >
-      {!newUser ? (
-        <Header
-          onClickBack={() => {
-            setNavigation(NAVIGATION.HOME);
-          }}
-        />
-      ) : null}
+      <Header
+        onClickBack={() => {
+          setNavigation(newUser ? NAVIGATION.LOGIN : NAVIGATION.HOME);
+        }}
+      />
       <Box
         sx={{
           display: "flex",
@@ -203,8 +223,8 @@ function LoginPage({
           alignItems: "center",
           justifyContent: "center",
           flexGrow: 1,
-          mt: 3,
           p: 3,
+          pb: 0,
         }}
       >
         <Box
@@ -242,11 +262,18 @@ function LoginPage({
                 mt: 3,
               }}
             >
-              {isSignedIn ? (
+              {isSignedIn && isAmazonAuthorPage ? (
                 "Click the button to get started"
               ) : (
                 <>
-                  Login to <Link href={AWS_AUTHORS_API}>amazon.author.com</Link>{" "}
+                  Login to{" "}
+                  <Link
+                    rel="noreferrer"
+                    target="_blank"
+                    href={AWS_AUTHORS_HOME_PAGE}
+                  >
+                    amazon.author.com
+                  </Link>{" "}
                   then click the button to get started
                 </>
               )}
@@ -258,7 +285,7 @@ function LoginPage({
               }}
             >
               <Button
-                disabled={!amazonData}
+                disabled={!amazonData || !isAmazonAuthorPage}
                 onClick={handleOnPressSync}
                 variant="contained"
                 sx={{
@@ -270,7 +297,27 @@ function LoginPage({
               </Button>
             </Box>
 
-            {isSignedIn ? null : (
+            {isAmazonAuthorPage ? (
+              isSignedIn ? null : (
+                <Alert
+                  sx={{
+                    fontSize: "12px",
+                    color: Colors.error,
+                  }}
+                  severity="error"
+                >
+                  You need to be signed in to{" "}
+                  <Link
+                    rel="noreferrer"
+                    target="_blank"
+                    href={AWS_AUTHORS_HOME_PAGE}
+                  >
+                    amazon.author.com
+                  </Link>{" "}
+                  to get started
+                </Alert>
+              )
+            ) : (
               <Alert
                 sx={{
                   fontSize: "12px",
@@ -278,9 +325,15 @@ function LoginPage({
                 }}
                 severity="error"
               >
-                You need to be signed in to{" "}
-                <Link href={AWS_AUTHORS_API}>amazon.author.com</Link> to get
-                started
+                You need to be on the{" "}
+                <Link
+                  rel="noreferrer"
+                  target="_blank"
+                  href={AWS_AUTHORS_HOME_PAGE}
+                >
+                  amazon.author.com
+                </Link>{" "}
+                to get started
               </Alert>
             )}
           </Box>
@@ -361,6 +414,8 @@ function LoginPage({
             </Box>
 
             <Link
+              rel="noreferrer"
+              target="_blank"
               href={AWS_AUTHORS_API}
               sx={{
                 py: 2,
@@ -375,7 +430,7 @@ function LoginPage({
             open={isLoadingBooks || isLoadingRegister}
             sx={{ zIndex: 999 }}
           >
-            <CircularProgress />
+            <CircularProgress size={20} color="info" />
           </Backdrop>
         </Box>
       </Box>

@@ -3,6 +3,9 @@ import HomePage from "./pages/HomePage";
 import { Box } from "@mui/material";
 import LoginPage from "./pages/LoginPage";
 import {
+  AMAZON_REGEX,
+  ASIN_REGEX,
+  AUTHOR_REGEX,
   AWS_AUTHORS_API,
   AWS_AUTHORS_HOME_PAGE,
   AWS_PROFILE_IMAGE_API,
@@ -13,10 +16,12 @@ import { type IAmazonData } from "./types/amazon.types";
 import { type IUser } from "./types/user.types";
 import axios from "axios";
 import { type CommonResponse } from "./types/common.types";
+import StartupPage from "./pages/StartupPage";
 
 function App(): JSX.Element {
   const [isLoading, setLoading] = useState(false);
   const [token, setToken] = useState("");
+  const [isGoogleLoading, setGoogleLoading] = useState(false);
 
   const [isSignedIn, setSignedIn] = useState(false);
 
@@ -26,6 +31,11 @@ function App(): JSX.Element {
   const [userData, setUserData] = useState<IUser>();
 
   const [navigation, setNavigation] = useState("");
+
+  // current page data
+  const [isAmazonPage, setAmazonPage] = useState<boolean>(false);
+  const [isAmazonAuthorPage, setIsAmazonAuthorPage] = useState(false);
+  const [currentAsin, setAsin] = useState<string>("");
 
   const handleOnLogout = (callback: () => void): void => {
     chrome?.identity?.clearAllCachedAuthTokens(async () => {
@@ -38,22 +48,47 @@ function App(): JSX.Element {
     });
   };
 
-  const loginUser = async (token: string) => {
+  const loginUser = async (
+    token: string,
+    provider: string,
+    callbackFn?: (success: boolean) => void
+  ) => {
     try {
-      const url = `${process.env.REACT_APP_API_BASE_URL ?? ""}/auth/login`;
-      const res = await axios.post<CommonResponse<IUser>>(url, {
-        token,
-      });
+      if (token) {
+        const url = `${process.env.REACT_APP_API_BASE_URL ?? ""}/auth/login`;
+        const res = await axios.post<CommonResponse<IUser>>(url, {
+          token,
+        });
 
-      setUserData(res.data.data);
+        setUserData(res.data.data);
+      }
+
+      chrome?.storage?.local
+        .set({
+          token,
+          provider,
+        })
+        .then(() => {
+          setTimeout(() => {
+            callbackFn?.(true);
+            setLoading(false);
+            setGoogleLoading(false);
+          }, 2000);
+        })
+        .catch(() => {
+          setTimeout(() => {
+            callbackFn?.(false);
+            setLoading(false);
+            setGoogleLoading(false);
+          }, 2000);
+        });
       setToken(token);
-      setTimeout(() => {
-        setLoading(false);
-      }, 2000);
     } catch (error: any) {
+      callbackFn?.(false);
       if (error?.response?.status === 401) {
         return handleOnLogout(() => {
           setTimeout(() => {
+            setGoogleLoading(false);
             setLoading(false);
           }, 2000);
         });
@@ -61,17 +96,10 @@ function App(): JSX.Element {
     }
   };
 
-  const loginWithGoogle = (): void => {
+  const loginWithGoogle = (interactive = false): void => {
     try {
-      chrome?.identity?.getAuthToken({}, (response: string) => {
-        chrome?.storage?.local
-          .set({
-            token: response,
-            provider: PROVIDERS.GOOGLE,
-          })
-          .then(() => {
-            loginUser(response);
-          });
+      chrome?.identity?.getAuthToken({ interactive }, (response: string) => {
+        loginUser(response, PROVIDERS.GOOGLE);
       });
     } catch (error) {
       setTimeout(() => {
@@ -84,12 +112,12 @@ function App(): JSX.Element {
     // this function get executed only if the local storage has provider === AMAZON
     // that means local storage should have a token
     chrome?.storage?.local.get("token").then((res) => {
-      loginUser(res.token);
+      loginUser(res.token, PROVIDERS.AMAZON);
     });
   };
 
-  const getFollowersCount = async (amazonData: IAmazonData) => {
-    if (!amazonData) return;
+  const getFollowersCount = async (amazonData?: IAmazonData) => {
+    if (!amazonData?.author) return;
 
     const authorId = amazonData.author.amazonAuthorId;
     const url = `${AWS_AUTHORS_API}/${authorId}/latestFollowCount`;
@@ -115,8 +143,8 @@ function App(): JSX.Element {
     setFollowersCount(data.count);
   };
 
-  const getProfileImage = async (amazonData: IAmazonData) => {
-    if (!amazonData) return;
+  const getProfileImage = async (amazonData?: IAmazonData) => {
+    if (!amazonData?.author) return;
 
     const authorId = amazonData.author.amazonAuthorId;
     const url = `${AWS_PROFILE_IMAGE_API}/${authorId}`;
@@ -142,7 +170,7 @@ function App(): JSX.Element {
     setProfilePicture(data.url);
   };
 
-  const getCSRFToken = async (shouldLogin: boolean) => {
+  const getCSRFToken = async (provider: string) => {
     try {
       const res = await fetch(AWS_AUTHORS_HOME_PAGE, {
         credentials: "include",
@@ -150,9 +178,11 @@ function App(): JSX.Element {
 
       if (res.url.includes("signin")) {
         setSignedIn(false);
-        setTimeout(() => {
-          setLoading(false);
-        }, 2000);
+        if (provider === PROVIDERS.AMAZON || provider === PROVIDERS.NONE) {
+          setTimeout(() => {
+            setLoading(false);
+          }, 2000);
+        }
       } else {
         const parser = new DOMParser();
 
@@ -167,21 +197,28 @@ function App(): JSX.Element {
             setAmazonData(data);
             getProfileImage(data);
             getFollowersCount(data);
-            if (shouldLogin) {
+            if (provider === PROVIDERS.AMAZON) {
               loginWithAmazon();
             } else {
-              setTimeout(() => {
-                setLoading(false);
-              }, 2000);
+              if (
+                provider === PROVIDERS.AMAZON ||
+                provider === PROVIDERS.NONE
+              ) {
+                setTimeout(() => {
+                  setLoading(false);
+                }, 2000);
+              }
             }
             return;
           }
         }
 
         setSignedIn(false);
-        setTimeout(() => {
-          setLoading(false);
-        }, 2000);
+        if (provider === PROVIDERS.AMAZON || provider === PROVIDERS.NONE) {
+          setTimeout(() => {
+            setLoading(false);
+          }, 2000);
+        }
       }
     } catch (error) {
       console.log("getCSRFToken error", error);
@@ -190,7 +227,7 @@ function App(): JSX.Element {
 
   const autoLogin = (): void => {
     chrome?.storage?.local.get("provider").then((res) => {
-      getCSRFToken(res.provider === PROVIDERS.AMAZON);
+      getCSRFToken(res.provider);
 
       if (res.provider === PROVIDERS.NONE) {
         // if the provider is NONE then the user has logged out from google, hence do not login automatically
@@ -207,14 +244,43 @@ function App(): JSX.Element {
     });
   };
 
+  const checkUrl = (): void => {
+    chrome?.tabs?.query(
+      {
+        active: true,
+        currentWindow: true,
+      },
+      (tabs) => {
+        const url = tabs[0]?.url ?? "";
+
+        const match = url?.toString().match(AMAZON_REGEX);
+        const asinMatch = url?.match(ASIN_REGEX);
+
+        setIsAmazonAuthorPage(AUTHOR_REGEX.test(url));
+
+        if (match && match.length > 0 && asinMatch && asinMatch.length > 0) {
+          setAsin(asinMatch[2]);
+          setAmazonPage(true);
+        } else {
+          setAmazonPage(false);
+        }
+      }
+    );
+  };
+
   useEffect(() => {
     setLoading(true);
     autoLogin();
+    checkUrl();
+    chrome?.tabs?.onUpdated?.addListener(checkUrl);
+    return () => {
+      chrome?.tabs?.onUpdated?.removeListener(checkUrl);
+    };
   }, []);
 
   const navigate = (): JSX.Element => {
     switch (true) {
-      case navigation === NAVIGATION.LOGIN:
+      case navigation === NAVIGATION.AMAZON_CONNECT:
         return (
           <LoginPage
             onSuccess={loginUser}
@@ -226,10 +292,25 @@ function App(): JSX.Element {
             newUser={false}
             setNavigation={setNavigation}
             currentToken={token}
+            isAmazonAuthorPage={isAmazonAuthorPage}
           />
         );
 
-      case token.length > 0:
+      case navigation === NAVIGATION.AMAZON_LOGIN:
+        return (
+          <LoginPage
+            onSuccess={loginUser}
+            amazonData={amazonData}
+            isSignedIn={isSignedIn}
+            followersCount={followersCount}
+            profilePicture={profilePicture}
+            isLoading={isLoading}
+            setNavigation={setNavigation}
+            isAmazonAuthorPage={isAmazonAuthorPage}
+          />
+        );
+
+      case token?.length > 0:
       case navigation === NAVIGATION.HOME:
         return (
           <HomePage
@@ -241,19 +322,23 @@ function App(): JSX.Element {
             followersCount={followersCount}
             profilePicture={profilePicture}
             amazonData={amazonData}
+            isAmazonPage={isAmazonPage}
+            currentAsin={currentAsin}
           />
         );
 
       default:
         return (
-          <LoginPage
-            onSuccess={loginUser}
-            amazonData={amazonData}
-            isSignedIn={isSignedIn}
-            followersCount={followersCount}
-            profilePicture={profilePicture}
-            isLoading={isLoading}
-            setNavigation={setNavigation}
+          <StartupPage
+            isGoogleLoading={isGoogleLoading}
+            onLoginWithGoogle={() => {
+              setGoogleLoading(true);
+              loginWithGoogle(true);
+            }}
+            onLoginWithAmazon={() => {
+              setNavigation(NAVIGATION.AMAZON_LOGIN);
+            }}
+            hideButtons={isLoading}
           />
         );
     }

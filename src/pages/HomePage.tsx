@@ -3,9 +3,9 @@ import React, { useEffect, useState } from "react";
 import { Backdrop, Box, Button, CircularProgress } from "@mui/material";
 import axios from "axios";
 import AddIcon from "@mui/icons-material/Add";
-import { AMAZON_REGEX, ASIN_REGEX, NAVIGATION, PROVIDERS } from "src/constants";
+import { NAVIGATION, PROVIDERS } from "src/constants";
 import Header from "src/components/Header";
-import { type IWatchItem, type IWatchlist } from "src/types/watchlist.types";
+import { type IProduct, type IWatchlist } from "src/types/watchlist.types";
 import { type CommonResponse } from "src/types/common.types";
 import { type IUser } from "src/types/user.types";
 import BookList from "src/components/BookList";
@@ -24,6 +24,9 @@ interface HomePageProps {
   userData?: IUser;
   setUserData: Function;
   setNavigation: Function;
+
+  isAmazonPage: boolean;
+  currentAsin?: string;
 }
 
 const HomePage = ({
@@ -37,11 +40,13 @@ const HomePage = ({
   userData,
   setUserData,
   setNavigation,
+
+  isAmazonPage,
+  currentAsin,
 }: HomePageProps) => {
   const [alertsCount, setCount] = useState<number>(0);
   const [list, setList] = useState<IWatchlist[]>([]);
-  const [isAmazonPage, setAmazonPage] = useState<boolean>(false);
-  const [currentAsin, setAsin] = useState<string>("");
+
   const [loading, setLoading] = useState(false);
 
   const handleOnDismissAuthorAccountSuggestion = async () => {
@@ -186,7 +191,9 @@ const HomePage = ({
         if (error?.response?.status === 401) {
           return onLogout(() => setLoading(false));
         }
-        setLoading(false);
+        setTimeout(() => {
+          setLoading(false);
+        }, 2000);
         console.log("updateUserWatchlist error", error);
       }
     });
@@ -237,7 +244,9 @@ const HomePage = ({
       if (error?.response?.status === 401) {
         return onLogout(() => setLoading(false));
       }
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 2000);
       console.log("getLatestWatchlist error", error);
     }
   };
@@ -249,14 +258,14 @@ const HomePage = ({
   }, [token, userData]);
 
   const handleOnClick = async () => {
-    // TODO: convert to new API
     setLoading(true);
 
     try {
-      const res = await axios.put<CommonResponse<IWatchlist>>(
-        process.env.REACT_APP_API_BASE_URL as string,
+      const url = `${process.env.REACT_APP_API_BASE_URL ?? ""}/watchlist/`;
+      const res = await axios.post<CommonResponse<IWatchlist>>(
+        url,
         {
-          asin: currentAsin.toString(),
+          asin: currentAsin?.toString(),
         },
         {
           headers: {
@@ -272,7 +281,9 @@ const HomePage = ({
       if (error?.response?.status === 401) {
         return onLogout(() => setLoading(false));
       }
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 2000);
       console.log("handleOnClick error", error);
     }
   };
@@ -301,7 +312,7 @@ const HomePage = ({
     setLoading(true);
 
     try {
-      await axios.delete<CommonResponse<IWatchItem>>(
+      await axios.delete<CommonResponse<IProduct>>(
         process.env.REACT_APP_API_BASE_URL as string,
         {
           headers: {
@@ -324,48 +335,27 @@ const HomePage = ({
       if (error?.response?.status === 401) {
         return onLogout(() => setLoading(false));
       }
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 2000);
       console.log("handleOnDelete error", error);
     }
   };
 
-  const checkUrl = (): void => {
-    chrome?.tabs?.query(
-      {
-        active: true,
-        currentWindow: true,
-      },
-      (tabs) => {
-        const url = tabs[0]?.url ?? "";
-
-        const match = url?.toString().match(AMAZON_REGEX);
-        const asinMatch = url?.match(ASIN_REGEX);
-
-        if (match && match.length > 0 && asinMatch && asinMatch.length > 0) {
-          setAsin(asinMatch[2]);
-          setAmazonPage(true);
-        } else {
-          setAmazonPage(false);
-        }
-      }
-    );
-  };
-
   const goToWeb = () => {
-    // TODO:
-    // const newWindow = window.open(
-    //   `${process.env.WEB_URL ?? ""}/user/${userId}`,
-    //   "_blank",
-    //   "noopener,noreferrer"
-    // );
-    // if (newWindow) newWindow.opener = null;
+    const newWindow = window.open(
+      `${process.env.REACT_APP_WEB_URL ?? ""}/user/${userData?.hash ?? ""}`,
+      "_blank",
+      "noopener,noreferrer"
+    );
+    if (newWindow) newWindow.opener = null;
   };
 
   const handleOnClickNotifications = async () => {
     setLoading(true);
 
     try {
-      await axios.delete<CommonResponse<IWatchItem>>(
+      await axios.delete<CommonResponse<IProduct>>(
         process.env.REACT_APP_API_BASE_URL as string,
         {
           headers: {
@@ -385,18 +375,12 @@ const HomePage = ({
       if (error?.response?.status === 401) {
         return onLogout(() => setLoading(false));
       }
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 2000);
       console.log("handleOnClickNotifications error", error);
     }
   };
-
-  useEffect(() => {
-    checkUrl();
-    chrome?.tabs?.onUpdated?.addListener(checkUrl);
-    return () => {
-      chrome?.tabs?.onUpdated?.removeListener(checkUrl);
-    };
-  }, []);
 
   const alreadyAdded = list.some((item) => item.product?.asin === currentAsin);
 
@@ -412,13 +396,14 @@ const HomePage = ({
         alerts={alertsCount}
         onLogout={onLogout}
         onClickNotifications={handleOnClickNotifications}
+        hideSettings={userData?.provider !== PROVIDERS.AMAZON}
       />
 
       {userData?.provider === PROVIDERS.GOOGLE &&
       !userData?.hide_author_suggestion ? (
         <LinkAuthorAccount
           onDismiss={handleOnDismissAuthorAccountSuggestion}
-          onClickLink={() => setNavigation(NAVIGATION.LOGIN)}
+          onClickLink={() => setNavigation(NAVIGATION.AMAZON_LOGIN)}
         />
       ) : null}
 
@@ -439,8 +424,9 @@ const HomePage = ({
         }
         size="large"
         startIcon={
-          alreadyAdded || list.length === 5 ? undefined : isAmazonPage &&
-            !currentAsin ? (
+          alreadyAdded ||
+          list.length === 5 ||
+          !isAmazonPage ? undefined : !currentAsin ? (
             <CircularProgress size={20} color="info" />
           ) : (
             <AddIcon />
@@ -449,6 +435,8 @@ const HomePage = ({
         sx={{
           py: 3,
           borderRadius: 0,
+          textTransform: "none",
+          lineHeight: 1.25,
         }}
       >
         {list.length === 5
@@ -457,7 +445,9 @@ const HomePage = ({
           ? "Already Added to the List"
           : isAmazonPage && !currentAsin
           ? ""
-          : "Add to the Watch List"}
+          : isAmazonPage
+          ? "Add to the List"
+          : "Add Another Book By Going To Its Amazon Page And Clicking Here"}
       </Button>
 
       <Backdrop open={loading} sx={{ zIndex: 999 }}>

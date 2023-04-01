@@ -89,47 +89,49 @@ const Header = ({
             />
           )}
         </Box>
-        {!hideSettings ? (
-          <>
-            <IconButton
-              onClick={onClickSettings}
-              id="settings-button"
-              aria-controls={open ? "basic-menu" : undefined}
-              aria-haspopup="true"
-              aria-expanded={open ? "true" : undefined}
-            >
-              <SettingsIcon sx={{ color: Colors.white }} />
-            </IconButton>
-            <Menu
-              id="basic-menu"
-              anchorEl={anchorEl}
-              open={open}
-              onClose={handleClose}
-              MenuListProps={{
-                "aria-labelledby": "basic-button",
-              }}
-            >
-              <MenuItem onClick={handleOnLogout}>
-                <ListItemIcon>
-                  <SwitchAccountIcon />
-                </ListItemIcon>
-                <ListItemText>Sign In With A Different Account</ListItemText>
-              </MenuItem>
-            </Menu>
-          </>
-        ) : null}
+        <Box>
+          {!hideSettings ? (
+            <>
+              <IconButton
+                onClick={onClickSettings}
+                id="settings-button"
+                aria-controls={open ? "basic-menu" : undefined}
+                aria-haspopup="true"
+                aria-expanded={open ? "true" : undefined}
+              >
+                <SettingsIcon sx={{ color: Colors.white }} />
+              </IconButton>
+              <Menu
+                id="basic-menu"
+                anchorEl={anchorEl}
+                open={open}
+                onClose={handleClose}
+                MenuListProps={{
+                  "aria-labelledby": "basic-button",
+                }}
+              >
+                <MenuItem onClick={handleOnLogout}>
+                  <ListItemIcon>
+                    <SwitchAccountIcon />
+                  </ListItemIcon>
+                  <ListItemText>Sign In With A Different Account</ListItemText>
+                </MenuItem>
+              </Menu>
+            </>
+          ) : null}
 
-        {alerts && alerts >= 0 ? (
-          <IconButton onClick={onClickNotifications}>
-            {alerts > 0 ? (
-              <Badge badgeContent="New" color="error">
+          {onClickNotifications ? (
+            <IconButton onClick={onClickNotifications}>
+              {alerts && alerts > 0 ? (
+                <Badge badgeContent="New" color="error">
+                  <NotificationsIcon sx={{ color: Colors.white }} />
+                </Badge>
+              ) : (
                 <NotificationsIcon sx={{ color: Colors.white }} />
-              </Badge>
-            ) : (
-              <NotificationsIcon sx={{ color: Colors.white }} />
-            )}
-          </IconButton>
-        ) : null}
+              )}
+            </IconButton>
+          ) : null}
+        </Box>
       </Toolbar>
     </AppBar>
   );

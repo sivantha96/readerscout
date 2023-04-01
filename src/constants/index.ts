@@ -4,6 +4,8 @@ export const AMAZON_REGEX =
 export const ASIN_REGEX =
   /(?:dp|gp\/product|exec\/obidos\/asin)\/(\.+\/)?(.{10})/;
 
+export const AUTHOR_REGEX = /^https?:\/\/author\.amazon\.com/;
+
 export const AWS_AUTHORS_HOME_PAGE = "https://author.amazon.com/home";
 export const AWS_AUTHORS_API = "https://author.amazon.com/api/authors";
 export const AWS_PROFILE_IMAGE_API =
@@ -25,4 +27,6 @@ export const PROVIDERS = {
 export const NAVIGATION = {
   HOME: "HOME",
   LOGIN: "LOGIN",
+  AMAZON_LOGIN: "AMAZON_LOGIN",
+  AMAZON_CONNECT: "AMAZON_CONNECT",
 };
