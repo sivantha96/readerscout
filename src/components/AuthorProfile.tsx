@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 import React from "react";
 import { Avatar, Box, Typography } from "@mui/material";
 import { Colors } from "src/assets/colors";
@@ -21,8 +22,8 @@ function AuthorProfile({
   followersCount,
 }: LinkAuthorAccountProps) {
   const count = followersCount ?? userData?.followers_count?.count;
-  const name = amazonData?.identities[0].claimedAuthorName ?? userData?.name;
-  const picture = profilePicture ?? userData?.profile_picture;
+  const name = amazonData?.identities[0].claimedAuthorName || userData?.name;
+  const picture = profilePicture || userData?.profile_picture;
 
   if (!count && !name && !picture) return null;
   return (

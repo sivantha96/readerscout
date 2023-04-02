@@ -106,7 +106,7 @@ function LoginPage({
 
       onSuccess(res.data.data.token, PROVIDERS.AMAZON, callback);
     } catch (error) {
-      console.log(error);
+      setLoadingRegister(false);
     }
   };
 
@@ -151,7 +151,6 @@ function LoginPage({
         onSuccess(res.data.data.token, PROVIDERS.AMAZON, callback);
       } catch (error) {
         setLoadingRegister(false);
-        console.log(error);
       }
     }
   };

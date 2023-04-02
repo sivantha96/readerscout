@@ -400,7 +400,7 @@ const HomePage = ({
       !userData?.hide_author_suggestion ? (
         <LinkAuthorAccount
           onDismiss={handleOnDismissAuthorAccountSuggestion}
-          onClickLink={() => setNavigation(NAVIGATION.AMAZON_LOGIN)}
+          onClickLink={() => setNavigation(NAVIGATION.AMAZON_CONNECT)}
         />
       ) : null}
 

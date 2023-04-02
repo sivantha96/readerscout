@@ -228,7 +228,7 @@ function App(): JSX.Element {
         }
       }
     } catch (error) {
-      console.log("getCSRFToken error", error);
+      console.log("get token error", error);
     }
   };
 

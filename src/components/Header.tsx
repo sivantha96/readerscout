@@ -49,6 +49,7 @@ const Header = ({
   const handleOnLogout = () => {
     onLogout?.(null);
   };
+
   return (
     <AppBar position="static" color="primary" enableColorOnDark>
       <Toolbar
