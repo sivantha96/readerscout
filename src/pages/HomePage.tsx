@@ -321,7 +321,6 @@ const HomePage = ({
           ...(userData?.provider ? { provider: userData.provider } : {}),
         },
         params: {
-          type: "book",
           id: item._id,
         },
       });
@@ -363,9 +362,6 @@ const HomePage = ({
         headers: {
           Authorization: `Bearer ${token}`,
           ...(userData?.provider ? { provider: userData.provider } : {}),
-        },
-        params: {
-          type: "notification",
         },
       });
 
