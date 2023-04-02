@@ -1,6 +1,11 @@
-/* eslint-disable no-constant-condition */
 import React, { type MouseEventHandler } from "react";
-import { Box, ButtonBase, CircularProgress, Typography } from "@mui/material";
+import {
+  Box,
+  ButtonBase,
+  CircularProgress,
+  Link,
+  Typography,
+} from "@mui/material";
 import PropTypes from "prop-types";
 import Image from "src/components/Image";
 import Logo from "src/assets/images/logo.png";
@@ -14,6 +19,8 @@ interface StartupProps {
   isGoogleLoading: boolean;
   onLoginWithGoogle: Function;
   onLoginWithAmazon: Function;
+  isRegister: boolean;
+  setRegister: Function;
 }
 
 const StartupPage = ({
@@ -21,6 +28,8 @@ const StartupPage = ({
   onLoginWithAmazon,
   hideButtons,
   isGoogleLoading,
+  isRegister,
+  setRegister,
 }: StartupProps) => {
   return (
     <Box
@@ -89,88 +98,128 @@ const StartupPage = ({
             objectFit="contain"
             sx={{ mt: 1, mr: 2 }}
           />
-          Login with Amazon
+          {isRegister ? "Register" : "Login"} with Amazon
         </ButtonBase>
-        <ButtonBase
-          onClick={onLoginWithGoogle as MouseEventHandler}
-          disabled={isGoogleLoading}
-          sx={{
-            boxShadow: 4,
-            px: 2,
-            py: 1,
-            borderRadius: 1,
-            fontWeight: 700,
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            height: "60px",
-            mb: 2,
-            width: "300px",
-            position: "relative",
-            overflow: "hidden",
-          }}
-        >
-          {isGoogleLoading ? (
+        {isRegister ? null : (
+          <ButtonBase
+            onClick={onLoginWithGoogle as MouseEventHandler}
+            disabled={isGoogleLoading}
+            sx={{
+              boxShadow: 4,
+              px: 2,
+              py: 1,
+              borderRadius: 1,
+              fontWeight: 700,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "60px",
+              mb: 2,
+              width: "300px",
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            {isGoogleLoading ? (
+              <Box
+                sx={{
+                  zIndex: 998,
+                  position: "absolute",
+                  opacity: 0.5,
+                  width: "100%",
+                  height: "100%",
+                  backgroundColor: Colors.white,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <CircularProgress
+                  size={20}
+                  color="primary"
+                  sx={{
+                    zIndex: 999,
+                  }}
+                />
+              </Box>
+            ) : null}
             <Box
               sx={{
-                zIndex: 998,
+                background: Colors.errorLight,
                 position: "absolute",
-                opacity: 0.5,
-                width: "100%",
-                height: "100%",
-                backgroundColor: Colors.white,
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
+                top: "-10px",
+                left: "-65px",
+                transform: "rotate(315deg)",
+                padding: "30px 60px 5px",
               }}
             >
-              <CircularProgress
-                size={20}
-                color="primary"
+              <Typography
                 sx={{
-                  zIndex: 999,
+                  color: Colors.error,
+                  fontSize: "10px",
+                  lineHeight: 1,
+                  fontWeight: 800,
                 }}
-              />
+              >
+                Limited <br />
+                Features
+              </Typography>
             </Box>
-          ) : null}
-          <Box
-            sx={{
-              background: Colors.errorLight,
-              position: "absolute",
-              top: "-10px",
-              left: "-65px",
-              transform: "rotate(315deg)",
-              padding: "30px 60px 5px",
-            }}
-          >
+            <Image
+              source={GoogleLogo}
+              alt="logo"
+              width="20px"
+              objectFit="contain"
+              sx={{ mt: 1, mr: 2 }}
+            />
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              Login with Google
+            </Box>
+          </ButtonBase>
+        )}
+
+        <Box sx={{ pt: 3 }}>
+          {isRegister ? (
             <Typography
               sx={{
-                color: Colors.error,
-                fontSize: "10px",
-                lineHeight: 1,
-                fontWeight: 800,
+                fontSize: "12px",
+                textAlign: "center",
               }}
             >
-              Limited <br />
-              Features
+              Already a user?{" "}
+              <Link
+                sx={{
+                  cursor: "pointer",
+                }}
+                onClick={() => setRegister(false)}
+              >
+                Login from here
+              </Link>
             </Typography>
-          </Box>
-          <Image
-            source={GoogleLogo}
-            alt="logo"
-            width="20px"
-            objectFit="contain"
-            sx={{ mt: 1, mr: 2 }}
-          />
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            Login with Google
-          </Box>
-        </ButtonBase>
+          ) : (
+            <Typography
+              sx={{
+                fontSize: "12px",
+                textAlign: "center",
+              }}
+            >
+              First time here?{" "}
+              <Link
+                sx={{
+                  cursor: "pointer",
+                }}
+                onClick={() => setRegister(true)}
+              >
+                Register from here
+              </Link>
+            </Typography>
+          )}
+        </Box>
       </Box>
     </Box>
   );

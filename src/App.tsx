@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import HomePage from "./pages/HomePage";
-import { Box } from "@mui/material";
+import { Box, Snackbar } from "@mui/material";
 import LoginPage from "./pages/LoginPage";
 import {
   AMAZON_REGEX,
@@ -22,8 +22,10 @@ function App(): JSX.Element {
   const [isLoading, setLoading] = useState(false);
   const [token, setToken] = useState("");
   const [isGoogleLoading, setGoogleLoading] = useState(false);
+  const [isSnackbarOpen, setSnackbarOpen] = useState(false);
 
   const [isSignedIn, setSignedIn] = useState(false);
+  const [isRegister, setRegister] = useState(false);
 
   const [amazonData, setAmazonData] = useState<IAmazonData>();
   const [followersCount, setFollowersCount] = useState<number>();
@@ -43,6 +45,7 @@ function App(): JSX.Element {
         provider: "NONE",
         token: null,
       });
+      setRegister(false);
       setToken("");
       callback?.();
     });
@@ -51,7 +54,8 @@ function App(): JSX.Element {
   const loginUser = async (
     token: string,
     provider: string,
-    callbackFn?: (success: boolean) => void
+    callbackFn?: (success: boolean) => void,
+    interactive?: boolean
   ) => {
     try {
       if (token) {
@@ -88,6 +92,9 @@ function App(): JSX.Element {
       if (error?.response?.status === 401) {
         return handleOnLogout(() => {
           setTimeout(() => {
+            if (interactive) {
+              setSnackbarOpen(true);
+            }
             setGoogleLoading(false);
             setLoading(false);
           }, 2000);
@@ -99,7 +106,7 @@ function App(): JSX.Element {
   const loginWithGoogle = (interactive = false): void => {
     try {
       chrome?.identity?.getAuthToken({ interactive }, (response: string) => {
-        loginUser(response, PROVIDERS.GOOGLE);
+        loginUser(response, PROVIDERS.GOOGLE, undefined, interactive);
       });
     } catch (error) {
       setTimeout(() => {
@@ -339,12 +346,24 @@ function App(): JSX.Element {
               setNavigation(NAVIGATION.AMAZON_LOGIN);
             }}
             hideButtons={isLoading}
+            isRegister={isRegister}
+            setRegister={setRegister}
           />
         );
     }
   };
 
-  return <Box>{navigate()}</Box>;
+  return (
+    <Box>
+      {navigate()}
+      <Snackbar
+        open={isSnackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+        message="Looks like you don't have an account. Register to get started."
+      />
+    </Box>
+  );
 }
 
 export default App;

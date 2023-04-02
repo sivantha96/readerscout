@@ -16,6 +16,7 @@ const EmptyList = () => {
         maxHeight: "500px",
         flexDirection: "column",
         background: "#ffffff",
+        marginTop: "-30px",
       }}
     >
       <Lottie

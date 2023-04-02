@@ -1,4 +1,3 @@
-/* eslint-disable no-constant-condition */
 import React, { useEffect, useState } from "react";
 import { Backdrop, Box, Button, CircularProgress } from "@mui/material";
 import axios from "axios";
@@ -312,19 +311,20 @@ const HomePage = ({
     setLoading(true);
 
     try {
-      await axios.delete<CommonResponse<IProduct>>(
-        process.env.REACT_APP_API_BASE_URL as string,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            ...(userData?.provider ? { provider: userData.provider } : {}),
-          },
-          params: {
-            type: "book",
-            id: item._id,
-          },
-        }
-      );
+      const url = `${process.env.REACT_APP_API_BASE_URL ?? ""}/watchlist/${
+        item._id
+      }`;
+
+      await axios.delete<CommonResponse<IProduct>>(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          ...(userData?.provider ? { provider: userData.provider } : {}),
+        },
+        params: {
+          type: "book",
+          id: item._id,
+        },
+      });
 
       const newList = [...list];
       newList.splice(index, 1);
@@ -355,18 +355,19 @@ const HomePage = ({
     setLoading(true);
 
     try {
-      await axios.delete<CommonResponse<IProduct>>(
-        process.env.REACT_APP_API_BASE_URL as string,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            ...(userData?.provider ? { provider: userData.provider } : {}),
-          },
-          params: {
-            type: "notification",
-          },
-        }
-      );
+      const url = `${
+        process.env.REACT_APP_API_BASE_URL ?? ""
+      }/users/notifications`;
+
+      await axios.delete<CommonResponse<IProduct>>(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          ...(userData?.provider ? { provider: userData.provider } : {}),
+        },
+        params: {
+          type: "notification",
+        },
+      });
 
       setAlertsCount(0);
       setLoading(false);
@@ -396,7 +397,7 @@ const HomePage = ({
         alerts={alertsCount}
         onLogout={onLogout}
         onClickNotifications={handleOnClickNotifications}
-        hideSettings={userData?.provider !== PROVIDERS.AMAZON}
+        hideSettings={false}
       />
 
       {userData?.provider === PROVIDERS.GOOGLE &&
@@ -420,7 +421,11 @@ const HomePage = ({
       <Button
         onClick={handleOnClick}
         disabled={
-          !isAmazonPage || !currentAsin || alreadyAdded || list.length === 5
+          !isAmazonPage ||
+          !currentAsin ||
+          alreadyAdded ||
+          (userData?.provider === PROVIDERS.GOOGLE && list.length > 5) ||
+          (userData?.provider === PROVIDERS.AMAZON && list.length > 50)
         }
         size="large"
         startIcon={
@@ -439,7 +444,8 @@ const HomePage = ({
           lineHeight: 1.25,
         }}
       >
-        {list.length === 5
+        {(userData?.provider === PROVIDERS.GOOGLE && list.length > 5) ||
+        (userData?.provider === PROVIDERS.AMAZON && list.length > 50)
           ? "List is Full"
           : alreadyAdded
           ? "Already Added to the List"

@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-
 export enum MESSAGE_TYPES {
   SHOW_TOAST = "SHOW_TOAST",
   SUCCESS_SHOW_TOAST = "SUCCESS_SHOW_TOAST",

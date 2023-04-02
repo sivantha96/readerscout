@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import PropTypes from "prop-types";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-import SwitchAccountIcon from "@mui/icons-material/SwitchAccount";
+import LogoutIcon from "@mui/icons-material/Logout";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { Colors } from "../assets/colors";
 import LogoImage from "src/assets/images/logo-large.png";
@@ -112,9 +112,9 @@ const Header = ({
               >
                 <MenuItem onClick={handleOnLogout}>
                   <ListItemIcon>
-                    <SwitchAccountIcon />
+                    <LogoutIcon />
                   </ListItemIcon>
-                  <ListItemText>Sign In With A Different Account</ListItemText>
+                  <ListItemText>Logout</ListItemText>
                 </MenuItem>
               </Menu>
             </>
