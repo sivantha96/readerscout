@@ -25,7 +25,6 @@ function App(): JSX.Element {
   const [isSnackbarOpen, setSnackbarOpen] = useState(false);
 
   const [isSignedIn, setSignedIn] = useState(false);
-  const [isRegister, setRegister] = useState(false);
 
   const [amazonData, setAmazonData] = useState<IAmazonData>();
   const [followersCount, setFollowersCount] = useState<number>();
@@ -45,7 +44,6 @@ function App(): JSX.Element {
         provider: "NONE",
         token: null,
       });
-      setRegister(false);
       setToken("");
       callback?.();
     });
@@ -346,8 +344,6 @@ function App(): JSX.Element {
               setNavigation(NAVIGATION.AMAZON_LOGIN);
             }}
             hideButtons={isLoading}
-            isRegister={isRegister}
-            setRegister={setRegister}
           />
         );
     }
