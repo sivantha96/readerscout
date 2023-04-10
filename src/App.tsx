@@ -183,10 +183,12 @@ function App(): JSX.Element {
 
       if (res.url.includes("signin")) {
         setSignedIn(false);
-        if (provider === PROVIDERS.AMAZON || provider === PROVIDERS.NONE) {
+        if (provider === PROVIDERS.NONE) {
           setTimeout(() => {
             setLoading(false);
           }, 2000);
+        } else if (provider === PROVIDERS.AMAZON) {
+          loginWithAmazon();
         }
       } else {
         const parser = new DOMParser();
@@ -202,27 +204,24 @@ function App(): JSX.Element {
             setAmazonData(data);
             getProfileImage(data);
             getFollowersCount(data);
-            if (provider === PROVIDERS.AMAZON) {
+            if (provider === PROVIDERS.NONE) {
+              setTimeout(() => {
+                setLoading(false);
+              }, 2000);
+            } else if (provider === PROVIDERS.AMAZON) {
               loginWithAmazon();
-            } else {
-              if (
-                provider === PROVIDERS.AMAZON ||
-                provider === PROVIDERS.NONE
-              ) {
-                setTimeout(() => {
-                  setLoading(false);
-                }, 2000);
-              }
             }
             return;
           }
         }
 
         setSignedIn(false);
-        if (provider === PROVIDERS.AMAZON || provider === PROVIDERS.NONE) {
+        if (provider === PROVIDERS.NONE) {
           setTimeout(() => {
             setLoading(false);
           }, 2000);
+        } else if (provider === PROVIDERS.AMAZON) {
+          loginWithAmazon();
         }
       }
     } catch (error) {
@@ -298,6 +297,10 @@ function App(): JSX.Element {
             setNavigation={setNavigation}
             currentToken={token}
             isAmazonAuthorPage={isAmazonAuthorPage}
+            onLoginWithGoogle={() => {
+              setGoogleLoading(true);
+              loginWithGoogle(true);
+            }}
           />
         );
 
@@ -312,6 +315,10 @@ function App(): JSX.Element {
             isLoading={isLoading}
             setNavigation={setNavigation}
             isAmazonAuthorPage={isAmazonAuthorPage}
+            onLoginWithGoogle={() => {
+              setGoogleLoading(true);
+              loginWithGoogle(true);
+            }}
           />
         );
 
@@ -336,10 +343,6 @@ function App(): JSX.Element {
         return (
           <StartupPage
             isGoogleLoading={isGoogleLoading}
-            onLoginWithGoogle={() => {
-              setGoogleLoading(true);
-              loginWithGoogle(true);
-            }}
             onLoginWithAmazon={() => {
               setNavigation(NAVIGATION.AMAZON_LOGIN);
             }}

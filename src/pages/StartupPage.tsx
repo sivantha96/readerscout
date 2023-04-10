@@ -1,5 +1,5 @@
 import React, { type MouseEventHandler } from "react";
-import { Box, ButtonBase, Link, Typography } from "@mui/material";
+import { Box, ButtonBase, Typography } from "@mui/material";
 import PropTypes from "prop-types";
 import Image from "src/components/Image";
 import Logo from "src/assets/images/logo.png";
@@ -10,12 +10,10 @@ import { Colors } from "src/assets/colors";
 interface StartupProps {
   hideButtons: boolean;
   isGoogleLoading: boolean;
-  onLoginWithGoogle: Function;
   onLoginWithAmazon: Function;
 }
 
 const StartupPage = ({
-  onLoginWithGoogle,
   onLoginWithAmazon,
   hideButtons,
   isGoogleLoading,
@@ -89,25 +87,6 @@ const StartupPage = ({
           />
           Login with Amazon
         </ButtonBase>
-
-        <Box sx={{ pt: 3 }}>
-          <Typography
-            sx={{
-              fontSize: "12px",
-              textAlign: "center",
-            }}
-          >
-            Already have an account using Google?{" "}
-            <Link
-              sx={{
-                cursor: "pointer",
-              }}
-              onClick={onLoginWithGoogle as MouseEventHandler}
-            >
-              Sign in here
-            </Link>
-          </Typography>
-        </Box>
       </Box>
     </Box>
   );

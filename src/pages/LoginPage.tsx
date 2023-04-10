@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { type MouseEventHandler, useEffect, useState } from "react";
 import {
   Alert,
   Backdrop,
@@ -37,6 +37,7 @@ type onSuccessFunction = (
 interface LoginPageProps {
   onSuccess: onSuccessFunction;
   setNavigation: Function;
+  onLoginWithGoogle: Function;
 
   amazonData?: IAmazonData;
   isSignedIn: boolean;
@@ -59,6 +60,7 @@ function LoginPage({
   currentToken,
   setNavigation,
   isAmazonAuthorPage,
+  onLoginWithGoogle,
 }: LoginPageProps) {
   const [isLoadingBooks, setLoadingBooks] = useState(false);
   const [isLoadingRegister, setLoadingRegister] = useState(false);
@@ -239,7 +241,7 @@ function LoginPage({
           <Image
             source={LogoText}
             alt="logo"
-            width="220px"
+            width="180px"
             objectFit="contain"
           />
           <Box
@@ -258,7 +260,7 @@ function LoginPage({
               sx={{
                 textAlign: "center",
                 mx: 5,
-                mt: 3,
+                mt: 1,
               }}
             >
               {isSignedIn && isAmazonAuthorPage ? (
@@ -337,6 +339,26 @@ function LoginPage({
             )}
           </Box>
         </Box>
+
+        <Box sx={{ pt: 3 }}>
+          <Typography
+            sx={{
+              fontSize: "12px",
+              textAlign: "center",
+            }}
+          >
+            Already have an account using Google?{" "}
+            <Link
+              sx={{
+                cursor: "pointer",
+              }}
+              onClick={onLoginWithGoogle as MouseEventHandler}
+            >
+              Sign in here
+            </Link>
+          </Typography>
+        </Box>
+
         <Box
           sx={{
             maxHeight: isLoading ? 0 : "600px",
@@ -395,7 +417,7 @@ function LoginPage({
                         fontSize: "12px",
                       },
                     }}
-                    primary="• Helps auto-load your book list"
+                    primary="• Auto-loads your book list to track reviews"
                   />
                 </ListItem>
                 <ListItem sx={{ py: 0, pt: 0, pb: 0 }}>
@@ -406,7 +428,7 @@ function LoginPage({
                         fontSize: "12px",
                       },
                     }}
-                    primary="• Gives permissions to see your followers"
+                    primary="• Displays your follower count"
                   />
                 </ListItem>
               </List>
