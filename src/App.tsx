@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import HomePage from "./pages/HomePage";
-import { Box, Snackbar } from "@mui/material";
+import { Backdrop, Box, CircularProgress, Snackbar } from "@mui/material";
 import LoginPage from "./pages/LoginPage";
 import {
   AMAZON_REGEX,
@@ -16,12 +16,11 @@ import { type IAmazonData } from "./types/amazon.types";
 import { type IUser } from "./types/user.types";
 import axios from "axios";
 import { type CommonResponse } from "./types/common.types";
-import StartupPage from "./pages/StartupPage";
 
 function App(): JSX.Element {
   const [isLoading, setLoading] = useState(false);
+  const [isProcessing, setProcessing] = useState(false);
   const [token, setToken] = useState("");
-  const [isGoogleLoading, setGoogleLoading] = useState(false);
   const [isSnackbarOpen, setSnackbarOpen] = useState(false);
 
   const [isSignedIn, setSignedIn] = useState(false);
@@ -74,14 +73,14 @@ function App(): JSX.Element {
           setTimeout(() => {
             callbackFn?.(true);
             setLoading(false);
-            setGoogleLoading(false);
+            setProcessing(false);
           }, 2000);
         })
         .catch(() => {
           setTimeout(() => {
             callbackFn?.(false);
             setLoading(false);
-            setGoogleLoading(false);
+            setProcessing(false);
           }, 2000);
         });
       setToken(token);
@@ -93,8 +92,8 @@ function App(): JSX.Element {
             if (interactive) {
               setSnackbarOpen(true);
             }
-            setGoogleLoading(false);
             setLoading(false);
+            setProcessing(false);
           }, 2000);
         });
       }
@@ -103,12 +102,16 @@ function App(): JSX.Element {
 
   const loginWithGoogle = (interactive = false): void => {
     try {
+      if (interactive) {
+        setProcessing(true);
+      }
       chrome?.identity?.getAuthToken({ interactive }, (response: string) => {
         loginUser(response, PROVIDERS.GOOGLE, undefined, interactive);
       });
     } catch (error) {
       setTimeout(() => {
         setLoading(false);
+        setProcessing(false);
       }, 2000);
     }
   };
@@ -186,6 +189,7 @@ function App(): JSX.Element {
         if (provider === PROVIDERS.NONE) {
           setTimeout(() => {
             setLoading(false);
+            setProcessing(false);
           }, 2000);
         } else if (provider === PROVIDERS.AMAZON) {
           loginWithAmazon();
@@ -207,6 +211,7 @@ function App(): JSX.Element {
             if (provider === PROVIDERS.NONE) {
               setTimeout(() => {
                 setLoading(false);
+                setProcessing(false);
               }, 2000);
             } else if (provider === PROVIDERS.AMAZON) {
               loginWithAmazon();
@@ -219,6 +224,7 @@ function App(): JSX.Element {
         if (provider === PROVIDERS.NONE) {
           setTimeout(() => {
             setLoading(false);
+            setProcessing(false);
           }, 2000);
         } else if (provider === PROVIDERS.AMAZON) {
           loginWithAmazon();
@@ -293,12 +299,11 @@ function App(): JSX.Element {
             followersCount={followersCount}
             profilePicture={profilePicture}
             isLoading={isLoading}
-            newUser={false}
             setNavigation={setNavigation}
-            currentToken={token}
             isAmazonAuthorPage={isAmazonAuthorPage}
+            newUser={false}
+            currentToken={token}
             onLoginWithGoogle={() => {
-              setGoogleLoading(true);
               loginWithGoogle(true);
             }}
           />
@@ -316,7 +321,6 @@ function App(): JSX.Element {
             setNavigation={setNavigation}
             isAmazonAuthorPage={isAmazonAuthorPage}
             onLoginWithGoogle={() => {
-              setGoogleLoading(true);
               loginWithGoogle(true);
             }}
           />
@@ -341,12 +345,18 @@ function App(): JSX.Element {
 
       default:
         return (
-          <StartupPage
-            isGoogleLoading={isGoogleLoading}
-            onLoginWithAmazon={() => {
-              setNavigation(NAVIGATION.AMAZON_LOGIN);
+          <LoginPage
+            onSuccess={loginUser}
+            amazonData={amazonData}
+            isSignedIn={isSignedIn}
+            followersCount={followersCount}
+            profilePicture={profilePicture}
+            isLoading={isLoading}
+            setNavigation={setNavigation}
+            isAmazonAuthorPage={isAmazonAuthorPage}
+            onLoginWithGoogle={() => {
+              loginWithGoogle(true);
             }}
-            hideButtons={isLoading}
           />
         );
     }
@@ -359,8 +369,11 @@ function App(): JSX.Element {
         open={isSnackbarOpen}
         autoHideDuration={3000}
         onClose={() => setSnackbarOpen(false)}
-        message="Looks like you don't have an account. Register to get started."
+        message="Looks like you don't have an account. Sync your Amazon account to get started."
       />
+      <Backdrop open={isProcessing} sx={{ zIndex: 999 }}>
+        <CircularProgress />
+      </Backdrop>
     </Box>
   );
 }

@@ -167,9 +167,13 @@ function LoginPage({
 
       setLoadingBooks(true);
 
+      console.log(JSON.stringify(amazonData, null, 2));
+
       const url = addParamsToURL(AWS_BOOKS_API, {
         author: amazonData.author.asin,
         marketplace: amazonData.identities[0].marketplace,
+        secondarySearchIndex: false,
+        sort: "popularity",
       });
 
       const res = await fetch(url, {
@@ -189,6 +193,8 @@ function LoginPage({
       });
 
       const data = await res.json();
+
+      console.log(data, null, 2);
 
       setBooks(data.data);
 
@@ -212,11 +218,13 @@ function LoginPage({
         height: "600px",
       }}
     >
-      <Header
-        onClickBack={() => {
-          setNavigation(newUser ? NAVIGATION.LOGIN : NAVIGATION.HOME);
-        }}
-      />
+      {newUser ? null : (
+        <Header
+          onClickBack={() => {
+            setNavigation(newUser ? NAVIGATION.LOGIN : NAVIGATION.HOME);
+          }}
+        />
+      )}
       <Box
         sx={{
           display: "flex",
@@ -340,25 +348,6 @@ function LoginPage({
           </Box>
         </Box>
 
-        <Box sx={{ pt: 3 }}>
-          <Typography
-            sx={{
-              fontSize: "12px",
-              textAlign: "center",
-            }}
-          >
-            Already have an account using Google?{" "}
-            <Link
-              sx={{
-                cursor: "pointer",
-              }}
-              onClick={onLoginWithGoogle as MouseEventHandler}
-            >
-              Sign in here
-            </Link>
-          </Typography>
-        </Box>
-
         <Box
           sx={{
             maxHeight: isLoading ? 0 : "600px",
@@ -367,6 +356,25 @@ function LoginPage({
             width: "100%",
           }}
         >
+          <Box sx={{ pt: 3 }}>
+            <Typography
+              sx={{
+                fontSize: "12px",
+                textAlign: "center",
+              }}
+            >
+              Already have an account using Google?{" "}
+              <Link
+                sx={{
+                  cursor: "pointer",
+                }}
+                onClick={onLoginWithGoogle as MouseEventHandler}
+              >
+                Sign in here
+              </Link>
+            </Typography>
+          </Box>
+
           <Box
             sx={{
               display: "flex",
