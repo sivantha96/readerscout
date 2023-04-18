@@ -94,6 +94,24 @@ const HomePage = ({
   };
 
   const updateAuthorInfo = async () => {
+    if (
+      !amazonData?.author ||
+      !amazonData.identities ||
+      amazonData.identities.length === 0
+    ) {
+      return;
+    }
+
+    let authorId;
+    let authorAsin;
+    if (Array.isArray(amazonData.author)) {
+      authorId = amazonData.author[0].amazonAuthorId;
+      authorAsin = amazonData.author[0].asin;
+    } else {
+      authorId = amazonData.author.amazonAuthorId;
+      authorAsin = amazonData.author.asin;
+    }
+
     try {
       const url = `${
         process.env.REACT_APP_API_BASE_URL ?? ""
@@ -101,12 +119,12 @@ const HomePage = ({
       await axios.patch<CommonResponse<IUser>>(
         url,
         {
-          id: amazonData?.author?.amazonAuthorId,
-          asin: amazonData?.author?.asin,
-          marketplace: amazonData?.identities?.[0]?.marketplace,
-          customer_id: amazonData?.account?.customerId,
-          name: amazonData?.identities?.[0]?.claimedAuthorName,
-          created_at: amazonData?.identities?.[0]?.createdAt,
+          id: authorId,
+          asin: authorAsin,
+          marketplace: amazonData.identities?.[0]?.marketplace,
+          customer_id: amazonData.account?.customerId,
+          name: amazonData.identities?.[0]?.claimedAuthorName,
+          created_at: amazonData.identities?.[0]?.createdAt,
         },
         {
           headers: {
@@ -153,7 +171,7 @@ const HomePage = ({
   }, [followersCount, userData]);
 
   useEffect(() => {
-    if (amazonData && userData?.provider === PROVIDERS.AMAZON) {
+    if (userData?.provider === PROVIDERS.AMAZON) {
       updateAuthorInfo();
     }
   }, [amazonData, userData]);

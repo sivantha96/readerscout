@@ -32,6 +32,10 @@ function App(): JSX.Element {
 
   const [navigation, setNavigation] = useState("");
 
+  useEffect(() => {
+    console.log("amazonData", amazonData);
+  }, [amazonData]);
+
   // current page data
   const [isAmazonPage, setAmazonPage] = useState<boolean>(false);
   const [isAmazonAuthorPage, setIsAmazonAuthorPage] = useState(false);
@@ -127,55 +131,75 @@ function App(): JSX.Element {
   const getFollowersCount = async (amazonData?: IAmazonData) => {
     if (!amazonData?.author) return;
 
-    const authorId = amazonData.author.amazonAuthorId;
+    let authorId;
+    if (Array.isArray(amazonData.author)) {
+      authorId = amazonData.author[0].amazonAuthorId;
+    } else {
+      authorId = amazonData.author.amazonAuthorId;
+    }
+
     const url = `${AWS_AUTHORS_API}/${authorId}/latestFollowCount`;
 
-    const res = await fetch(url, {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        accept: "application/json, text/javascript, */*; q=0.01",
-        "content-type": "application/json",
-        "sec-fetch-dest": "empty",
-        "sec-fetch-mode": "cors",
-        "sec-fetch-site": "same-origin",
-        "x-csrf-token": amazonData.csrftoken.token,
-        "x-requested-with": "XMLHttpRequest",
-      },
-      body: null,
-      mode: "cors",
-    });
+    try {
+      const res = await fetch(url, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          accept: "application/json, text/javascript, */*; q=0.01",
+          "content-type": "application/json",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "x-csrf-token": amazonData.csrftoken.token,
+          "x-requested-with": "XMLHttpRequest",
+        },
+        body: null,
+        mode: "cors",
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    setFollowersCount(data.count);
+      setFollowersCount(data.count);
+    } catch (error) {
+      setFollowersCount(0);
+    }
   };
 
   const getProfileImage = async (amazonData?: IAmazonData) => {
     if (!amazonData?.author) return;
 
-    const authorId = amazonData.author.amazonAuthorId;
+    let authorId;
+    if (Array.isArray(amazonData.author)) {
+      authorId = amazonData.author[0].amazonAuthorId;
+    } else {
+      authorId = amazonData.author.amazonAuthorId;
+    }
+
     const url = `${AWS_PROFILE_IMAGE_API}/${authorId}`;
 
-    const res = await fetch(url, {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        accept: "application/json, text/javascript, */*; q=0.01",
-        "content-type": "application/json",
-        "sec-fetch-dest": "empty",
-        "sec-fetch-mode": "cors",
-        "sec-fetch-site": "same-origin",
-        "x-csrf-token": amazonData.csrftoken.token,
-        "x-requested-with": "XMLHttpRequest",
-      },
-      body: null,
-      mode: "cors",
-    });
+    try {
+      const res = await fetch(url, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          accept: "application/json, text/javascript, */*; q=0.01",
+          "content-type": "application/json",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "x-csrf-token": amazonData.csrftoken.token,
+          "x-requested-with": "XMLHttpRequest",
+        },
+        body: null,
+        mode: "cors",
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    setProfilePicture(data.url);
+      setProfilePicture(data.url);
+    } catch (error) {
+      setProfilePicture("");
+    }
   };
 
   const getCSRFToken = async (provider: string) => {
@@ -184,17 +208,23 @@ function App(): JSX.Element {
         credentials: "include",
       });
 
+      console.log("getCSRFToken - 1");
+
       if (res.url.includes("signin")) {
+        console.log("getCSRFToken - 2 - 1");
         setSignedIn(false);
         if (provider === PROVIDERS.NONE) {
+          console.log("getCSRFToken - 3 - 1");
           setTimeout(() => {
             setLoading(false);
             setProcessing(false);
           }, 2000);
         } else if (provider === PROVIDERS.AMAZON) {
+          console.log("getCSRFToken - 3 - 2");
           loginWithAmazon();
         }
       } else {
+        console.log("getCSRFToken - 2 - 2");
         const parser = new DOMParser();
 
         const html = await res.text();
@@ -202,33 +232,43 @@ function App(): JSX.Element {
 
         const elem = doc.getElementById("__data__");
         if (elem) {
+          console.log("getCSRFToken - 4 - 1");
           const data = JSON.parse(elem.innerText);
           if (data) {
+            console.log("getCSRFToken - 6 - 1");
             setSignedIn(true);
             setAmazonData(data);
             getProfileImage(data);
             getFollowersCount(data);
             if (provider === PROVIDERS.NONE) {
+              console.log("getCSRFToken - 6 - 2");
               setTimeout(() => {
                 setLoading(false);
                 setProcessing(false);
               }, 2000);
             } else if (provider === PROVIDERS.AMAZON) {
+              console.log("getCSRFToken - 6 - 3");
               loginWithAmazon();
             }
+            console.log("getCSRFToken - 6 - 4");
             return;
           }
+          console.log("getCSRFToken - 6 - 5");
         }
 
+        console.log("getCSRFToken - 7");
         setSignedIn(false);
         if (provider === PROVIDERS.NONE) {
+          console.log("getCSRFToken - 5 - 1");
           setTimeout(() => {
             setLoading(false);
             setProcessing(false);
           }, 2000);
         } else if (provider === PROVIDERS.AMAZON) {
+          console.log("getCSRFToken - 5 - 2");
           loginWithAmazon();
         }
+        console.log("getCSRFToken - 8");
       }
     } catch (error) {
       console.log("get token error", error);

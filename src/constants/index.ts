@@ -12,6 +12,8 @@ export const AWS_PROFILE_IMAGE_API =
   "https://author.amazon.com/api/profileImage";
 export const AWS_BOOKS_API = "https://author.amazon.com/api/search/titleset";
 export const AWS_BOOKS_PAGE = "https://author.amazon.com/books";
+export const PRIVACY_POLICY = "https://readerscout.com/privacy-policy";
+export const SETUP_AUTHOR_ACCOUNT = "https://kindlepreneur.com/amazon-author-central-page";
 
 export const REACT_GLOBALS = {
   marketPlaceIdWithAuthor: "",

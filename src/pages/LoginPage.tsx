@@ -13,11 +13,12 @@ import {
 } from "@mui/material";
 import Image from "src/components/Image";
 import {
-  AWS_AUTHORS_API,
   AWS_AUTHORS_HOME_PAGE,
   AWS_BOOKS_API,
   NAVIGATION,
+  PRIVACY_POLICY,
   PROVIDERS,
+  SETUP_AUTHOR_ACCOUNT,
 } from "src/constants";
 import Logo from "src/assets/images/logo.png";
 import LogoText from "src/assets/images/logo-text.svg";
@@ -73,14 +74,32 @@ function LoginPage({
     followersCount: number,
     profilePicture?: string
   ) => {
+    if (
+      !amazonData?.author ||
+      !amazonData.identities ||
+      amazonData.identities.length === 0
+    ) {
+      return;
+    }
+
+    let authorId;
+    let authorAsin;
+    if (Array.isArray(amazonData.author)) {
+      authorId = amazonData.author[0].amazonAuthorId;
+      authorAsin = amazonData.author[0].asin;
+    } else {
+      authorId = amazonData.author.amazonAuthorId;
+      authorAsin = amazonData.author.asin;
+    }
+
     try {
       const res = await axios.post<CommonResponse<{ token: string }>>(
         `${process.env.REACT_APP_API_BASE_URL ?? ""}/auth/change-to-amazon`,
         {
           books: books && books.length > 0 ? books.slice(0, 50) : [],
           author: {
-            id: amazonData.author.amazonAuthorId,
-            asin: amazonData.author.asin,
+            id: authorId,
+            asin: authorAsin,
             marketplace: amazonData.identities[0].marketplace,
             customer_id: amazonData.account.customerId,
             name: amazonData.identities[0].claimedAuthorName,
@@ -113,7 +132,20 @@ function LoginPage({
   };
 
   const onComplete = async () => {
-    if (!isLoadingBooks && amazonData && books && followersCount) {
+    if (
+      !isLoadingBooks &&
+      amazonData &&
+      books &&
+      typeof followersCount === "number"
+    ) {
+      console.log(
+        "inside onComplete",
+        isLoadingBooks,
+        amazonData,
+        books,
+        followersCount
+      );
+
       if (!newUser) {
         return convertGoogleUserToAmazon(
           amazonData,
@@ -123,14 +155,32 @@ function LoginPage({
         );
       }
 
+      if (
+        !amazonData?.author ||
+        !amazonData.identities ||
+        amazonData.identities.length === 0
+      ) {
+        return;
+      }
+
+      let authorId;
+      let authorAsin;
+      if (Array.isArray(amazonData.author)) {
+        authorId = amazonData.author[0].amazonAuthorId;
+        authorAsin = amazonData.author[0].asin;
+      } else {
+        authorId = amazonData.author.amazonAuthorId;
+        authorAsin = amazonData.author.asin;
+      }
+
       try {
         const res = await axios.post<CommonResponse<{ token: string }>>(
           `${process.env.REACT_APP_API_BASE_URL ?? ""}/auth/amazon`,
           {
             books: books && books.length > 0 ? books.slice(0, 50) : [],
             author: {
-              id: amazonData.author.amazonAuthorId,
-              asin: amazonData.author.asin,
+              id: authorId,
+              asin: authorAsin,
               marketplace: amazonData.identities[0].marketplace,
               customer_id: amazonData.account.customerId,
               name: amazonData.identities[0].claimedAuthorName,
@@ -162,15 +212,31 @@ function LoginPage({
   }, [amazonData, books, followersCount, profilePicture, isLoadingBooks]);
 
   const getBooks = async () => {
+    console.log("getting books");
+
     try {
-      if (!amazonData) return;
+      if (
+        !amazonData?.author ||
+        !amazonData.identities ||
+        amazonData.identities.length === 0
+      ) {
+        console.log("returning from getBooks");
+        return;
+      }
+
+      let authorAsin;
+      if (Array.isArray(amazonData.author)) {
+        authorAsin = amazonData.author[0].asin;
+      } else {
+        authorAsin = amazonData.author.asin;
+      }
 
       setLoadingBooks(true);
 
       console.log(JSON.stringify(amazonData, null, 2));
 
       const url = addParamsToURL(AWS_BOOKS_API, {
-        author: amazonData.author.asin,
+        author: authorAsin,
         marketplace: amazonData.identities[0].marketplace,
         secondarySearchIndex: false,
         sort: "popularity",
@@ -194,12 +260,18 @@ function LoginPage({
 
       const data = await res.json();
 
-      console.log(data, null, 2);
+      console.log("got all the books", data);
 
-      setBooks(data.data);
+      // filter books which does not have an ASIN on top level
+      const filteredBooks = data.data?.filter((book: any) => book.asin);
+
+      console.log("filtered books", data);
+
+      setBooks(filteredBooks);
 
       setLoadingBooks(false);
     } catch (error) {
+      console.log("getBooks", error);
       setLoadingBooks(false);
       setLoadingRegister(false);
     }
@@ -281,7 +353,7 @@ function LoginPage({
                     target="_blank"
                     href={AWS_AUTHORS_HOME_PAGE}
                   >
-                    amazon.author.com
+                    author.amazon.com
                   </Link>{" "}
                   then click the button to get started
                 </>
@@ -294,7 +366,7 @@ function LoginPage({
               }}
             >
               <Button
-                disabled={!amazonData || !isAmazonAuthorPage}
+                disabled={!amazonData?.author || !isAmazonAuthorPage}
                 onClick={handleOnPressSync}
                 variant="contained"
                 sx={{
@@ -307,7 +379,27 @@ function LoginPage({
             </Box>
 
             {isAmazonAuthorPage ? (
-              isSignedIn ? null : (
+              isSignedIn ? (
+                !amazonData?.author ? (
+                  <Alert
+                    sx={{
+                      fontSize: "12px",
+                      color: Colors.error,
+                    }}
+                    severity="error"
+                  >
+                    To use ReaderScout, you need an Amazon Author account. See{" "}
+                    <Link
+                      rel="noreferrer"
+                      target="_blank"
+                      href={SETUP_AUTHOR_ACCOUNT}
+                    >
+                      here
+                    </Link>{" "}
+                    on how to set one up.
+                  </Alert>
+                ) : null
+              ) : (
                 <Alert
                   sx={{
                     fontSize: "12px",
@@ -321,7 +413,7 @@ function LoginPage({
                     target="_blank"
                     href={AWS_AUTHORS_HOME_PAGE}
                   >
-                    amazon.author.com
+                    author.amazon.com
                   </Link>{" "}
                   to get started
                 </Alert>
@@ -340,7 +432,7 @@ function LoginPage({
                   target="_blank"
                   href={AWS_AUTHORS_HOME_PAGE}
                 >
-                  amazon.author.com
+                  author.amazon.com
                 </Link>{" "}
                 to get started
               </Alert>
@@ -445,7 +537,7 @@ function LoginPage({
             <Link
               rel="noreferrer"
               target="_blank"
-              href={AWS_AUTHORS_API}
+              href={PRIVACY_POLICY}
               sx={{
                 py: 2,
                 fontSize: "12px",
