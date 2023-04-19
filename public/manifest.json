@@ -1,7 +1,7 @@
 {
   "name": "ReaderScout",
   "description": "Get notifications on price changes and new reviews for Amazon books",
-  "version": "2.0.1",
+  "version": "1.4.0",
   "manifest_version": 3,
   "background": {
     "service_worker": "background.js"

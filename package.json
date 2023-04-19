@@ -1,6 +1,6 @@
 {
   "name": "bookshopper",
-  "version": "2.0.1",
+  "version": "1.4.0",
   "private": true,
   "scripts": {
     "start": "env-cmd -f .env.local react-scripts start",
