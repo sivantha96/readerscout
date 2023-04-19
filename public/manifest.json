@@ -15,10 +15,7 @@
       }
     ]
   },
-  "host_permissions": [
-    "*://*.amazon.com/*",
-    "*://*.on.aws/*"
-  ],
+  "host_permissions": ["*://*.amazon.com/*", "*://*.on.aws/*"],
   "permissions": [
     "webRequest",
     "activeTab",
@@ -29,7 +26,6 @@
     "identity",
     "identity.email",
     "storage",
-    "scripting",
     "declarativeNetRequest"
   ],
   "action": {
