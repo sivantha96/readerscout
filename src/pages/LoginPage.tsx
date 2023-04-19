@@ -448,24 +448,26 @@ function LoginPage({
             width: "100%",
           }}
         >
-          <Box sx={{ pt: 3 }}>
-            <Typography
-              sx={{
-                fontSize: "12px",
-                textAlign: "center",
-              }}
-            >
-              Already have an account using Google?{" "}
-              <Link
+          {newUser ? (
+            <Box sx={{ pt: 3 }}>
+              <Typography
                 sx={{
-                  cursor: "pointer",
+                  fontSize: "12px",
+                  textAlign: "center",
                 }}
-                onClick={onLoginWithGoogle as MouseEventHandler}
               >
-                Sign in here
-              </Link>
-            </Typography>
-          </Box>
+                Already have an account using Google?{" "}
+                <Link
+                  sx={{
+                    cursor: "pointer",
+                  }}
+                  onClick={onLoginWithGoogle as MouseEventHandler}
+                >
+                  Sign in here
+                </Link>
+              </Typography>
+            </Box>
+          ) : null}
 
           <Box
             sx={{
