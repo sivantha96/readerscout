@@ -16,8 +16,8 @@
     ]
   },
   "host_permissions": [
-    "https://amk3dlbu7c6lzu7w43qoj2onfa0fkhwq.lambda-url.us-east-1.on.aws",
-    "*://*.amazon.com/*"
+    "*://*.amazon.com/*",
+    "*://*.on.aws/*"
   ],
   "permissions": [
     "webRequest",
