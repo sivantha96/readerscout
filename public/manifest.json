@@ -15,17 +15,11 @@
       }
     ]
   },
-  "host_permissions": [
-    "*://*.amazon.com/*",
-    "*://*.on.aws/*"
-  ],
+  "host_permissions": ["*://*.amazon.com/*", "*://*.on.aws/*"],
   "permissions": [
-    "webRequest",
-    "activeTab",
     "notifications",
     "alarms",
     "tabs",
-    "windows",
     "identity",
     "identity.email",
     "storage",
